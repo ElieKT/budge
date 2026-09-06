@@ -1,0 +1,267 @@
+// Prisma schema for the Budge.
+//
+// Money convention: every monetary column is an Int storing the currency's
+// *minor unit* (cents for USD) — never a float — so arithmetic stays exact.
+// See src/lib/money.ts for the shared conversion/formatting helpers.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Auth (Auth.js / NextAuth Prisma adapter shape, plus our own password field)
+// ---------------------------------------------------------------------------
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+
+  preference             UserPreference?
+  categories             Category[]
+  transactions           Transaction[]
+  budgets                MonthlyBudget[]
+  savingsGoals           SavingsGoal[]
+  recurringTransactions  RecurringTransaction[]
+  passwordResetTokens    PasswordResetToken[]
+
+  @@index([email])
+}
+
+// Kept for future OAuth providers (Google, etc.) via the Auth.js adapter.
+// Unused by the credentials-only v1 flow but required by @auth/prisma-adapter.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// User preferences / onboarding state
+// ---------------------------------------------------------------------------
+
+model UserPreference {
+  id                     String    @id @default(cuid())
+  userId                 String    @unique
+  currency               String    @default("USD") // ISO 4217; only USD is exercised in v1 UI
+  monthlyIncomeEstimate  Int? // minor units; captured during onboarding, informational only
+  onboardingCompletedAt  DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Categories
+// ---------------------------------------------------------------------------
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+model Category {
+  id        String          @id @default(cuid())
+  // null userId = system default category, visible to every user, not editable/deletable by them
+  userId    String?
+  name      String
+  kind      TransactionType
+  color     String          @default("#6b7280")
+  icon      String?
+  isDefault Boolean         @default(false)
+  createdAt DateTime        @default(now())
+
+  user             User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions     Transaction[]
+  budgetCategories BudgetCategory[]
+  recurringTransactions RecurringTransaction[]
+
+  // Note: Postgres treats each NULL as distinct, so this constraint only
+  // enforces per-user name uniqueness for real users; the fixed seed list
+  // is what keeps the null-userId default rows from duplicating.
+  @@unique([userId, name, kind])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Transactions (income + expenses, unified)
+// ---------------------------------------------------------------------------
+
+model Transaction {
+  id          String          @id @default(cuid())
+  userId      String
+  type        TransactionType
+  amount      Int // minor units, always >= 1
+  currency    String          @default("USD")
+  date        DateTime
+  description String?
+  merchant    String?
+  notes       String?
+  categoryId  String?
+
+  recurringTransactionId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category             Category?            @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  recurringTransaction RecurringTransaction? @relation(fields: [recurringTransactionId], references: [id], onDelete: SetNull)
+
+  @@index([userId, date])
+  @@index([userId, type])
+  @@index([categoryId])
+}
+
+// ---------------------------------------------------------------------------
+// Monthly budgets
+// ---------------------------------------------------------------------------
+
+model MonthlyBudget {
+  id        String   @id @default(cuid())
+  userId    String
+  month     Int // 1-12
+  year      Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categories BudgetCategory[]
+
+  @@unique([userId, year, month])
+  @@index([userId])
+}
+
+model BudgetCategory {
+  id          String @id @default(cuid())
+  budgetId    String
+  categoryId  String
+  amountLimit Int // minor units, planned spending limit for this category this month
+
+  budget   MonthlyBudget @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  category Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([budgetId, categoryId])
+  @@index([categoryId])
+}
+
+// ---------------------------------------------------------------------------
+// Savings goals
+// ---------------------------------------------------------------------------
+
+model SavingsGoal {
+  id             String    @id @default(cuid())
+  userId         String
+  name           String
+  targetAmount   Int // minor units
+  currentAmount  Int       @default(0) // minor units
+  targetDate     DateTime?
+  notes          String?
+  isCompleted    Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Recurring transactions
+// ---------------------------------------------------------------------------
+
+enum RecurrenceFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  ANNUALLY
+}
+
+model RecurringTransaction {
+  id          String              @id @default(cuid())
+  userId      String
+  type        TransactionType
+  amount      Int
+  categoryId  String?
+  description String?
+  merchant    String?
+  notes       String?
+  frequency   RecurrenceFrequency
+  startDate   DateTime
+  endDate     DateTime?
+  nextRunDate DateTime
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category     Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  transactions Transaction[]
+
+  @@index([userId])
+  @@index([nextRunDate])
+}
