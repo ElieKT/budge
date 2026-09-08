@@ -28,7 +28,9 @@ export function AppShell({
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 lg:flex">
         <div className="flex h-16 items-center gap-2 px-5">
-          <span className="text-lg font-semibold" style={{ color: "var(--accent)" }}>💰 Budge</span>
+          <span className="bg-gradient-to-r from-brand-400 to-teal-500 bg-clip-text text-2xl font-extrabold tracking-tight text-transparent">
+            💰 Budge
+          </span>
         </div>
         <nav className="flex-1 space-y-1 px-3">
           {navItems.map((item) => (
@@ -49,7 +51,9 @@ export function AppShell({
 
       {/* Mobile top bar */}
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900 lg:hidden">
-        <span className="text-base font-semibold" style={{ color: "var(--accent)" }}>💰 Budge</span>
+        <span className="bg-gradient-to-r from-brand-400 to-teal-500 bg-clip-text text-xl font-extrabold tracking-tight text-transparent">
+          💰 Budge
+        </span>
         <button
           type="button"
           aria-label="Open menu"
