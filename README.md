@@ -429,3 +429,5 @@ implemented as its own separate feature.
   to more keys and locales without a schema change; moving to per-URL
   locale routing (e.g. `next-intl`) would be the next step for full
   coverage.
+
+<!-- connectivity check: 2026-09-08T02:23:30Z -->
