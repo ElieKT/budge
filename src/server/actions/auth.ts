@@ -6,6 +6,7 @@ import { AuthError } from "next-auth";
 import { signIn, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth-guard";
+import { reconcileHouseholdAfterMemberLeft } from "@/server/data/household";
 import { sendPasswordResetEmail } from "@/lib/email";
 import {
   changePasswordSchema,
@@ -152,8 +153,23 @@ export async function updateProfile(_prev: unknown, formData: FormData): Promise
 
 export async function deleteAccount(): Promise<void> {
   const userId = await requireUserId();
-  // Cascading FKs (see prisma/schema.prisma) remove every owned record —
-  // transactions, budgets, savings goals, categories, sessions, etc.
+
+  // Household has no direct owner foreign key (only via HouseholdMember), so
+  // the cascade below removes this user's membership row but never an
+  // otherwise-empty household — reconciled explicitly afterward, the same
+  // way leaving a household through the UI already is.
+  const householdIds = (
+    await prisma.householdMember.findMany({ where: { userId }, select: { householdId: true } })
+  ).map((m) => m.householdId);
+
+  // Cascading FKs (see prisma/schema.prisma) remove every other owned
+  // record — transactions, budgets, savings goals, categories, sessions,
+  // household memberships, etc.
   await prisma.user.delete({ where: { id: userId } });
+
+  for (const householdId of householdIds) {
+    await reconcileHouseholdAfterMemberLeft(householdId);
+  }
+
   await signOut({ redirectTo: "/" });
 }

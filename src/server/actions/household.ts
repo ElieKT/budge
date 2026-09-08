@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth-guard";
 import { parseAmountToCents } from "@/lib/money";
-import { assertHouseholdMember } from "@/server/data/household";
+import { assertHouseholdMember, reconcileHouseholdAfterMemberLeft } from "@/server/data/household";
 import {
   addHouseholdMemberSchema,
   createHouseholdSchema,
@@ -65,19 +65,7 @@ export async function removeHouseholdMember(householdId: string, memberUserId: s
   await prisma.householdMember.delete({
     where: { householdId_userId: { householdId, userId: memberUserId } },
   });
-
-  const remaining = await prisma.householdMember.findMany({
-    where: { householdId },
-    orderBy: { joinedAt: "asc" },
-  });
-
-  if (remaining.length === 0) {
-    // Nobody left — remove the household itself (cascades its expenses/splits).
-    await prisma.household.delete({ where: { id: householdId } });
-  } else if (!remaining.some((m) => m.role === "OWNER") && remaining[0]) {
-    // The owner just left — hand ownership to whoever has been a member the longest.
-    await prisma.householdMember.update({ where: { id: remaining[0].id }, data: { role: "OWNER" } });
-  }
+  await reconcileHouseholdAfterMemberLeft(householdId);
 
   revalidatePath(`/household/${householdId}`);
   revalidatePath("/household");

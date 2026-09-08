@@ -19,6 +19,32 @@ export async function assertHouseholdMember(householdId: string, userId: string)
   return membership;
 }
 
+/**
+ * Reconciles a household immediately after one of its HouseholdMember rows
+ * has been removed (however that happened — leaving, being removed, or the
+ * member's whole account being deleted): deletes the household if nobody
+ * remains, or hands ownership to the longest-standing member if the one who
+ * left was the owner.
+ *
+ * This exists because Household has no direct owner foreign key — only the
+ * HouseholdMember join table — so a plain cascading delete of a user (see
+ * deleteAccount()) removes their membership row but never the household
+ * itself, silently leaving a permanent zero-member orphan behind. Every
+ * code path that removes a membership must call this afterward.
+ */
+export async function reconcileHouseholdAfterMemberLeft(householdId: string) {
+  const remaining = await prisma.householdMember.findMany({
+    where: { householdId },
+    orderBy: { joinedAt: "asc" },
+  });
+
+  if (remaining.length === 0) {
+    await prisma.household.delete({ where: { id: householdId } });
+  } else if (!remaining.some((m) => m.role === "OWNER") && remaining[0]) {
+    await prisma.householdMember.update({ where: { id: remaining[0].id }, data: { role: "OWNER" } });
+  }
+}
+
 export async function getHouseholdDetail(householdId: string, userId: string) {
   await assertHouseholdMember(householdId, userId);
 
