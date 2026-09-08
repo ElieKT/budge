@@ -16,9 +16,9 @@ export function WorldTable({ weather }: { weather: CityWeather[] }) {
   const weatherByCurrency = new Map(weather.map((w) => [w.currency, w]));
 
   return (
-    <div className="overflow-x-auto">
+    <div className="max-h-96 overflow-y-auto overflow-x-auto">
       <table className="w-full min-w-[640px] text-sm">
-        <thead>
+        <thead className="sticky top-0 bg-surface dark:bg-slate-900">
           <tr className="border-b border-slate-100 text-left text-xs uppercase tracking-wide text-slate-400 dark:border-slate-800">
             <th className="py-2 pr-3 font-medium">Country</th>
             <th className="py-2 pr-3 font-medium">Currency</th>

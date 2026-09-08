@@ -45,24 +45,26 @@ export default async function ToolsPage() {
           {news.length === 0 ? (
             <p className="text-sm text-slate-400">Headlines are temporarily unavailable.</p>
           ) : (
-            <ul className="divide-y divide-slate-100 dark:divide-slate-800">
-              {news.map((item) => (
-                <li key={item.link} className="py-2.5">
-                  <a
-                    href={item.link}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    className="text-sm font-medium text-slate-800 hover:underline dark:text-slate-100"
-                  >
-                    {item.title}
-                  </a>
-                  <p className="mt-0.5 text-xs text-slate-400">
-                    {item.source}
-                    {item.pubDate ? ` · ${new Date(item.pubDate).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}` : ""}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            <div className="max-h-96 overflow-y-auto">
+              <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+                {news.map((item) => (
+                  <li key={item.link} className="py-2.5">
+                    <a
+                      href={item.link}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      className="text-sm font-medium text-slate-800 hover:underline dark:text-slate-100"
+                    >
+                      {item.title}
+                    </a>
+                    <p className="mt-0.5 text-xs text-slate-400">
+                      {item.source}
+                      {item.pubDate ? ` · ${new Date(item.pubDate).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}` : ""}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </section>
       </div>
