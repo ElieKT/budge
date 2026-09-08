@@ -1,14 +1,22 @@
+import Link from "next/link";
 import { requireAdmin } from "@/lib/auth-guard";
 import { getAdminOverview } from "@/server/data/admin";
 import { PageHeader } from "@/components/ui/Misc";
 import { SignupsChart } from "@/components/admin/SignupsChart";
 
-function StatCard({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="card">
+function StatCard({ label, value, href }: { label: string; value: number; href?: string }) {
+  const content = (
+    <>
       <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
       <p className="mt-1 text-2xl font-semibold tabular-nums">{value.toLocaleString("en-US")}</p>
-    </div>
+    </>
+  );
+  return href ? (
+    <Link href={href} className="card block hover:border-brand-300">
+      {content}
+    </Link>
+  ) : (
+    <div className="card">{content}</div>
   );
 }
 
@@ -31,6 +39,7 @@ export default async function AdminOverviewPage() {
         <StatCard label="Debts tracked" value={stats.totalDebts} />
         <StatCard label="Recurring bills tracked" value={stats.totalRecurringExpenses} />
         <StatCard label="Bank connections (Plaid)" value={stats.connectedPlaidItems} />
+        <StatCard label="New messages" value={stats.unreadMessages} href="/admin/messages" />
       </div>
 
       <div className="card mt-6">

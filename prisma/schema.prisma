@@ -268,6 +268,21 @@ model SavingsGoal {
   @@index([userId])
 }
 
+// A message submitted through the Help page's contact form. Deliberately
+// not tied to a User — the form is reachable while signed out, and a
+// message is a support request, not app data, so it isn't cascade-deleted
+// if the sender later deletes their account.
+model ContactMessage {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  message    String   @db.Text
+  isResolved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 // A single debt balance (credit card, loan, etc.) entered manually for the
 // debt payoff planner. Deliberately separate from FinancialAccount — a debt
 // here needs an APR and minimum payment to simulate a payoff schedule,

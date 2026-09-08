@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { logoutAction } from "@/server/actions/auth";
 
 /** Protected admin shell. Middleware already redirects non-admins away from
@@ -10,6 +11,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   if (session.user.role !== "ADMIN") redirect("/dashboard");
+
+  const unreadMessages = await prisma.contactMessage.count({ where: { isResolved: false } });
 
   return (
     <div className="min-h-dvh bg-muted dark:bg-slate-950">
@@ -25,6 +28,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               </Link>
               <Link href="/admin/users" className="text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100">
                 Users
+              </Link>
+              <Link href="/admin/messages" className="flex items-center gap-1.5 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100">
+                Messages
+                {unreadMessages > 0 && (
+                  <span className="rounded-full bg-expense px-1.5 py-0.5 text-xs font-semibold text-white">{unreadMessages}</span>
+                )}
               </Link>
             </nav>
           </div>

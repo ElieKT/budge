@@ -21,6 +21,7 @@ export async function getAdminOverview() {
     totalDebts,
     totalRecurringExpenses,
     connectedPlaidItems,
+    unreadMessages,
     localeCounts,
     recentSignups,
   ] = await Promise.all([
@@ -31,6 +32,7 @@ export async function getAdminOverview() {
     prisma.debt.count(),
     prisma.recurringTransaction.count({ where: { type: "EXPENSE" } }),
     prisma.plaidItem.count(),
+    prisma.contactMessage.count({ where: { isResolved: false } }),
     prisma.userPreference.groupBy({ by: ["locale"], _count: { _all: true } }),
     prisma.user.findMany({ where: { createdAt: { gte: since } }, select: { createdAt: true } }),
   ]);
@@ -54,6 +56,7 @@ export async function getAdminOverview() {
     totalDebts,
     totalRecurringExpenses,
     connectedPlaidItems,
+    unreadMessages,
     usersByLocale: localeCounts.map((l) => ({ locale: l.locale, count: l._count._all })),
     signupsByDay: Array.from(dayBuckets, ([date, count]) => ({ date, count })),
   };

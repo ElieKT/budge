@@ -25,6 +25,15 @@ test("no page throws a server-side exception through the main flows", async ({ p
   page.on("pageerror", (err) => pageErrors.push(`[${page.url()}] ${err.message}`));
   const email = `verify-${Date.now()}@example.com`;
 
+  // Contact form on the Help page — reachable and usable while signed out.
+  await page.goto("/help");
+  await assertNoServerError(page, "help (logged out)");
+  await page.getByLabel("Your name").fill("Verify Bot");
+  await page.getByLabel("Your email").fill(email);
+  await page.getByLabel("Message").fill("Verify Contact Message — this is a test submission.");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(page.getByText("Thanks — your message has been sent.")).toBeVisible({ timeout: 10000 });
+
   await page.goto("/register");
   await page.getByLabel("Full name").fill("Verify Bot");
   await page.getByLabel("Email").fill(email);
@@ -247,6 +256,17 @@ test("no page throws a server-side exception through the main flows", async ({ p
   await assertNoServerError(page, "admin users roster");
   await expect(page.getByText(email)).toBeVisible();
   await expect(page.getByText("You")).toBeVisible(); // self row has no role-toggle button
+
+  // The contact message submitted while signed out, at the very start, should show up here.
+  await page.goto("/admin/messages");
+  await assertNoServerError(page, "admin messages (before resolving)");
+  await expect(page.getByText("Verify Contact Message — this is a test submission.")).toBeVisible();
+  await expect(page.getByText(`<${email}>`)).toBeVisible();
+  await page.getByRole("button", { name: "Mark resolved" }).click();
+  await page.waitForTimeout(1000);
+  await page.reload();
+  await assertNoServerError(page, "admin messages (after resolving)");
+  await expect(page.getByRole("button", { name: "Mark as new" })).toBeVisible();
 
   expect(pageErrors, `uncaught client-side errors: ${pageErrors.join("; ")}`).toEqual([]);
   await prisma.$disconnect();

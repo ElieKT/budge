@@ -1,5 +1,6 @@
 import { PublicPageShell } from "@/components/layout/PublicPageShell";
 import { CONTACT } from "@/lib/contact";
+import { ContactForm } from "@/components/help/ContactForm";
 
 const FAQS: { q: string; a: string }[] = [
   {
@@ -55,6 +56,14 @@ export default function HelpPage() {
             <dd className="font-medium text-slate-500 dark:text-slate-400">{CONTACT.address}</dd>
           </div>
         </dl>
+      </section>
+
+      <section className="card mt-6">
+        <h2 className="mb-1 text-base font-semibold text-slate-900 dark:text-slate-50">Send us a message</h2>
+        <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+          Prefer a quick note over email? Send one here and we&apos;ll reply to the address you give us.
+        </p>
+        <ContactForm />
       </section>
 
       <section className="mt-8">
