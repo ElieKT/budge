@@ -19,7 +19,7 @@ test("no page throws a server-side exception through the main flows", async ({ p
   test.setTimeout(180_000);
   page.on("dialog", (dialog) => dialog.accept());
   const pageErrors: string[] = [];
-  page.on("pageerror", (err) => pageErrors.push(err.message));
+  page.on("pageerror", (err) => pageErrors.push(`[${page.url()}] ${err.message}`));
   const email = `verify-${Date.now()}@example.com`;
 
   await page.goto("/register");

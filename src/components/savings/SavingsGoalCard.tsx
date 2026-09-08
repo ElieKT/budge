@@ -37,7 +37,10 @@ export function SavingsGoalCard({ goal, currency = "USD" }: { goal: Goal; curren
       </div>
       {goal.targetDate && (
         <p className="mb-2 text-xs text-slate-400">
-          Target date: {goal.targetDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+          {/* targetDate is a plain calendar date (UTC midnight from a "yyyy-mm-dd" input) —
+              pin timeZone: "UTC" so it shows the right day everywhere and never mismatches
+              between server render and client hydration. */}
+          Target date: {goal.targetDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" })}
         </p>
       )}
       <ProgressBar percentage={goal.percentage} status={goal.percentage >= 100 ? "over" : "under"} />
