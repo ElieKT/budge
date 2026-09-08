@@ -3,8 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth-guard";
-import { parseAmountToCents } from "@/lib/money";
-import { copyBudgetSchema, monthlyBudgetInputSchema } from "@/lib/validation/budget";
+import { centsToDecimalString, parseAmountToCents } from "@/lib/money";
+import { applyBudgetTemplateSchema, copyBudgetSchema, monthlyBudgetInputSchema } from "@/lib/validation/budget";
+import { computeTemplateAllocations } from "@/lib/budgetTemplates";
 import { errorResult, okResult, zodErrorResult, type ActionResult } from "@/server/action-result";
 
 /** Creates or replaces the full set of category allocations for one month. */
@@ -108,4 +109,49 @@ export async function copyBudgetFromMonth(
 
   revalidatePath("/budgets");
   return okResult(undefined);
+}
+
+/**
+ * Applies a starter template (src/lib/budgetTemplates.ts): computes
+ * suggested category limits from the given monthly income, matches them
+ * to the user's actual categories by name (skipping any that don't
+ * exist — e.g. a deleted/renamed default), and saves them exactly like a
+ * manually-built budget would be. Reuses saveMonthlyBudget's own
+ * validation/upsert logic rather than duplicating it.
+ */
+export async function applyBudgetTemplate(_prev: unknown, formData: FormData): Promise<ActionResult> {
+  const userId = await requireUserId();
+  const parsed = applyBudgetTemplateSchema.safeParse({
+    templateKey: formData.get("templateKey"),
+    monthlyIncome: formData.get("monthlyIncome"),
+    month: formData.get("month"),
+    year: formData.get("year"),
+  });
+  if (!parsed.success) return zodErrorResult(parsed.error);
+
+  const suggested = computeTemplateAllocations(parsed.data.templateKey, parseAmountToCents(parsed.data.monthlyIncome));
+  if (suggested.length === 0) return errorResult("Enter a monthly income to generate a budget from this template.");
+
+  const categories = await prisma.category.findMany({
+    where: { OR: [{ userId }, { userId: null }], kind: "EXPENSE", name: { in: suggested.map((s) => s.categoryName) } },
+    select: { id: true, name: true },
+  });
+  const categoryIdByName = new Map(categories.map((c) => [c.name, c.id]));
+
+  const allocations = suggested
+    .map((s) => {
+      const categoryId = categoryIdByName.get(s.categoryName);
+      return categoryId ? { categoryId, amountLimit: centsToDecimalString(s.amountCents) } : null;
+    })
+    .filter((a): a is { categoryId: string; amountLimit: string } => a !== null);
+
+  if (allocations.length === 0) {
+    return errorResult("None of this template's categories were found on your account.");
+  }
+
+  const fd = new FormData();
+  fd.set("month", String(parsed.data.month));
+  fd.set("year", String(parsed.data.year));
+  fd.set("allocations", JSON.stringify(allocations));
+  return saveMonthlyBudget(undefined, fd);
 }

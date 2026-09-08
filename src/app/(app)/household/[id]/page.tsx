@@ -4,6 +4,7 @@ import { formatCurrency } from "@/lib/money";
 import { PageHeader, EmptyState, Badge } from "@/components/ui/Misc";
 import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteButton";
 import { AddMemberForm } from "@/components/household/AddMemberForm";
+import { LeaveHouseholdButton } from "@/components/household/LeaveHouseholdButton";
 import { SharedExpenseModal } from "@/components/household/SharedExpenseModal";
 import { removeHouseholdMember, deleteSharedExpense } from "@/server/actions/household";
 import { getUserCurrency } from "@/server/data/preferences";
@@ -17,6 +18,8 @@ export default async function HouseholdDetailPage({ params }: { params: Promise<
   ]);
 
   const members = household.members.map((m) => ({ userId: m.userId, name: m.user.name ?? m.user.email }));
+  const currentUserIsOwner = household.members.find((m) => m.userId === userId)?.role === "OWNER";
+  const isSoleMember = household.members.length === 1;
 
   return (
     <div>
@@ -45,20 +48,27 @@ export default async function HouseholdDetailPage({ params }: { params: Promise<
 
           <h3 className="mb-2 text-sm font-semibold text-slate-700">Members</h3>
           <ul className="mb-3 space-y-1.5">
-            {household.members.map((m) => (
-              <li key={m.id} className="flex items-center justify-between text-sm">
-                <span className="text-slate-600">
-                  {m.user.name ?? m.user.email} {m.role === "OWNER" && <Badge tone="neutral">Owner</Badge>}
-                </span>
-                {m.userId !== userId && (
-                  <ConfirmDeleteButton
-                    action={removeHouseholdMember.bind(null, household.id, m.userId)}
-                    label="Remove"
-                    confirmMessage="Remove this member from the household?"
-                  />
-                )}
-              </li>
-            ))}
+            {household.members.map((m) => {
+              const isSelf = m.userId === userId;
+              return (
+                <li key={m.id} className="flex items-center justify-between gap-2 text-sm">
+                  <span className="min-w-0 truncate text-slate-600 dark:text-slate-300">
+                    {m.user.name ?? m.user.email} {m.role === "OWNER" && <Badge tone="neutral">Owner</Badge>}
+                  </span>
+                  {isSelf ? (
+                    <LeaveHouseholdButton householdId={household.id} userId={userId} isSoleMember={isSoleMember} />
+                  ) : (
+                    currentUserIsOwner && (
+                      <ConfirmDeleteButton
+                        action={removeHouseholdMember.bind(null, household.id, m.userId)}
+                        label="Remove"
+                        confirmMessage={`Remove ${m.user.name ?? m.user.email} from the household?`}
+                      />
+                    )
+                  )}
+                </li>
+              );
+            })}
           </ul>
           <AddMemberForm householdId={household.id} />
         </section>

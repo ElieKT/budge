@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth-guard";
 import { parseAmountToCents } from "@/lib/money";
 import { transactionInputSchema } from "@/lib/validation/transaction";
+import { ALLOWED_RECEIPT_TYPES, MAX_RECEIPT_BYTES } from "@/lib/validation/receipt";
 import { errorResult, okResult, zodErrorResult, type ActionResult } from "@/server/action-result";
 
 async function assertCategoryUsable(userId: string, categoryId: string | undefined) {
@@ -13,6 +14,37 @@ async function assertCategoryUsable(userId: string, categoryId: string | undefin
     where: { id: categoryId, OR: [{ userId }, { userId: null }] },
   });
   if (!category) throw new Error("Selected category is not available.");
+}
+
+/**
+ * Reads an optional "receipt" file field. Returns:
+ * - `{ dataUrl: undefined }` — no new file was submitted, leave whatever's there alone
+ * - `{ dataUrl: null }` — the "remove receipt" checkbox was checked
+ * - `{ dataUrl: "data:..." }` — a new receipt to store
+ */
+function extractReceipt(formData: FormData): { ok: true; dataUrl?: string | null } | { ok: false; error: string } {
+  if (formData.get("removeReceipt") === "true") return { ok: true, dataUrl: null };
+
+  const file = formData.get("receipt");
+  if (!(file instanceof File) || file.size === 0) return { ok: true, dataUrl: undefined };
+
+  if (!ALLOWED_RECEIPT_TYPES.includes(file.type as (typeof ALLOWED_RECEIPT_TYPES)[number])) {
+    return { ok: false, error: "Please upload a PNG, JPEG, WebP, or GIF image for the receipt." };
+  }
+  if (file.size > MAX_RECEIPT_BYTES) {
+    return { ok: false, error: `That receipt image is too large — please use one under ${MAX_RECEIPT_BYTES / 1024 / 1024}MB.` };
+  }
+
+  return { ok: true, dataUrl: `pending` }; // placeholder — actual read happens async below (File.arrayBuffer)
+}
+
+async function readReceiptDataUrl(formData: FormData): Promise<{ ok: true; dataUrl?: string | null } | { ok: false; error: string }> {
+  const check = extractReceipt(formData);
+  if (!check.ok || check.dataUrl !== "pending") return check;
+
+  const file = formData.get("receipt") as File;
+  const buffer = Buffer.from(await file.arrayBuffer());
+  return { ok: true, dataUrl: `data:${file.type};base64,${buffer.toString("base64")}` };
 }
 
 export async function createTransaction(
@@ -37,6 +69,9 @@ export async function createTransaction(
     return errorResult((e as Error).message);
   }
 
+  const receipt = await readReceiptDataUrl(formData);
+  if (!receipt.ok) return errorResult(receipt.error);
+
   await prisma.transaction.create({
     data: {
       userId,
@@ -47,6 +82,7 @@ export async function createTransaction(
       description: parsed.data.description ?? null,
       merchant: parsed.data.merchant ?? null,
       notes: parsed.data.notes ?? null,
+      receiptUrl: receipt.dataUrl ?? null,
     },
   });
 
@@ -84,6 +120,9 @@ export async function updateTransaction(
     return errorResult((e as Error).message);
   }
 
+  const receipt = await readReceiptDataUrl(formData);
+  if (!receipt.ok) return errorResult(receipt.error);
+
   await prisma.transaction.update({
     where: { id: transactionId },
     data: {
@@ -94,6 +133,8 @@ export async function updateTransaction(
       description: parsed.data.description ?? null,
       merchant: parsed.data.merchant ?? null,
       notes: parsed.data.notes ?? null,
+      // undefined = leave column alone; null = clear it; string = replace it
+      ...(receipt.dataUrl !== undefined ? { receiptUrl: receipt.dataUrl } : {}),
     },
   });
 

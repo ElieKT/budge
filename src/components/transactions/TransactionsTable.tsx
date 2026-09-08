@@ -14,6 +14,7 @@ type Row = {
   merchant: string | null;
   notes: string | null;
   categoryId: string | null;
+  receiptUrl: string | null;
   category: { id: string; name: string; color: string } | null;
 };
 
@@ -49,7 +50,14 @@ export function TransactionsTable({
                 {t.date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
               </td>
               <td className="px-4 py-3">
-                <p className="font-medium text-slate-800 dark:text-slate-100">{t.merchant || t.description || "—"}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="font-medium text-slate-800 dark:text-slate-100">{t.merchant || t.description || "—"}</p>
+                  {t.receiptUrl && (
+                    <a href={t.receiptUrl} target="_blank" rel="noopener noreferrer" title="View receipt" aria-label="View receipt" className="shrink-0">
+                      🧾
+                    </a>
+                  )}
+                </div>
                 {t.merchant && t.description && <p className="text-xs text-slate-400">{t.description}</p>}
               </td>
               <td className="px-4 py-3">
@@ -79,6 +87,7 @@ export function TransactionsTable({
                       description: t.description ?? "",
                       merchant: t.merchant ?? "",
                       notes: t.notes ?? "",
+                      receiptUrl: t.receiptUrl ?? "",
                     }}
                   />
                   <ConfirmDeleteButton action={deleteTransaction.bind(null, t.id)} confirmMessage="Delete this transaction? This can't be undone." />

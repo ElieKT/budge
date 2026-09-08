@@ -72,29 +72,29 @@ export function BudgetEditorModal({
             <div className="space-y-3">
               {rows.map((row, i) => (
                 <div key={i} className="flex items-end gap-2">
-                  <div className="flex-1">
+                  <div className="min-w-0 flex-1">
                     {i === 0 && <label className="label">Category</label>}
                     <select
                       value={row.categoryId}
                       onChange={(e) => updateRow(i, { categoryId: e.target.value })}
-                      className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                      className="block w-full min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                     >
                       {categories.map((c) => (
                         <option key={c.id} value={c.id}>{c.name}</option>
                       ))}
                     </select>
                   </div>
-                  <div className="w-32">
-                    {i === 0 && <label className="label">Limit (USD)</label>}
+                  <div className="w-20 shrink-0 sm:w-32">
+                    {i === 0 && <label className="label">Limit</label>}
                     <input
                       inputMode="decimal"
                       placeholder="0.00"
                       value={row.amount}
                       onChange={(e) => updateRow(i, { amount: e.target.value })}
-                      className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                      className="block w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 sm:px-3"
                     />
                   </div>
-                  <button type="button" onClick={() => removeRow(i)} aria-label="Remove category" className="mb-0.5 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-expense">
+                  <button type="button" onClick={() => removeRow(i)} aria-label="Remove category" className="mb-0.5 shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-expense dark:hover:bg-slate-800">
                     ✕
                   </button>
                 </div>

@@ -6,8 +6,8 @@ const mockRequireUserId = vi.fn();
 vi.mock("@/lib/auth-guard", () => ({ requireUserId: mockRequireUserId }));
 
 const prismaMock = {
-  householdMember: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn(), delete: vi.fn() },
-  household: { findUniqueOrThrow: vi.fn() },
+  householdMember: { findUnique: vi.fn(), findMany: vi.fn(), create: vi.fn(), delete: vi.fn(), update: vi.fn() },
+  household: { findUniqueOrThrow: vi.fn(), delete: vi.fn() },
   user: { findUnique: vi.fn() },
   sharedExpense: { create: vi.fn(), findFirst: vi.fn(), delete: vi.fn() },
 };
@@ -114,10 +114,38 @@ describe("household membership isolation", () => {
   it("lets any member remove themselves", async () => {
     prismaMock.householdMember.findUnique.mockResolvedValue({ householdId: HOUSEHOLD_ID, userId: OUTSIDER, role: "MEMBER" });
     prismaMock.householdMember.delete.mockResolvedValue({});
+    // An owner remains after the caller leaves — no promotion, no household deletion.
+    prismaMock.householdMember.findMany.mockResolvedValue([{ id: "m_owner", userId: "someone_else", role: "OWNER" }]);
 
     const result = await removeHouseholdMember(HOUSEHOLD_ID, OUTSIDER);
 
     expect(result.ok).toBe(true);
     expect(prismaMock.householdMember.delete).toHaveBeenCalled();
+    expect(prismaMock.householdMember.update).not.toHaveBeenCalled();
+    expect(prismaMock.household.delete).not.toHaveBeenCalled();
+  });
+
+  it("promotes the longest-standing member to owner when the owner leaves", async () => {
+    prismaMock.householdMember.findUnique.mockResolvedValue({ householdId: HOUSEHOLD_ID, userId: OUTSIDER, role: "OWNER" });
+    prismaMock.householdMember.delete.mockResolvedValue({});
+    prismaMock.householdMember.findMany.mockResolvedValue([{ id: "m_next", userId: "next_member", role: "MEMBER" }]);
+
+    const result = await removeHouseholdMember(HOUSEHOLD_ID, OUTSIDER);
+
+    expect(result.ok).toBe(true);
+    expect(prismaMock.householdMember.update).toHaveBeenCalledWith({ where: { id: "m_next" }, data: { role: "OWNER" } });
+    expect(prismaMock.household.delete).not.toHaveBeenCalled();
+  });
+
+  it("deletes the household when the last member leaves", async () => {
+    prismaMock.householdMember.findUnique.mockResolvedValue({ householdId: HOUSEHOLD_ID, userId: OUTSIDER, role: "OWNER" });
+    prismaMock.householdMember.delete.mockResolvedValue({});
+    prismaMock.householdMember.findMany.mockResolvedValue([]);
+
+    const result = await removeHouseholdMember(HOUSEHOLD_ID, OUTSIDER);
+
+    expect(result.ok).toBe(true);
+    expect(prismaMock.household.delete).toHaveBeenCalledWith({ where: { id: HOUSEHOLD_ID } });
+    expect(prismaMock.householdMember.update).not.toHaveBeenCalled();
   });
 });

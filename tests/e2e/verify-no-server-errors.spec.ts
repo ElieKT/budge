@@ -17,6 +17,7 @@ async function assertNoServerError(page: import("@playwright/test").Page, label:
 
 test("no page throws a server-side exception through the main flows", async ({ page }) => {
   test.setTimeout(180_000);
+  page.on("dialog", (dialog) => dialog.accept());
   const email = `verify-${Date.now()}@example.com`;
 
   await page.goto("/register");
@@ -39,15 +40,21 @@ test("no page throws a server-side exception through the main flows", async ({ p
   await page.reload();
   await assertNoServerError(page, "categories (after, with delete button rendered)");
 
-  // Transactions — add an expense, reload.
+  // Transactions — add an expense with a receipt photo attached, reload.
   await page.goto("/transactions");
   await page.getByRole("button", { name: "+ Add transaction" }).click();
   await page.getByLabel("Amount (USD)").fill("12.34");
+  await page.getByLabel("Date").fill(new Date().toISOString().slice(0, 10));
   await page.getByLabel("Merchant").fill("Verify Merchant");
+  await page.locator('input[name="receipt"]').setInputFiles(
+    "C:/Users/eliet/AppData/Local/Temp/claude/C--Users-eliet/8cd5be36-9c71-4307-98bb-32642aea61ef/scratchpad/test-receipt.png",
+  );
+  await expect(page.getByAltText("Receipt preview")).toBeVisible({ timeout: 10000 });
   await page.getByRole("button", { name: "Add transaction", exact: true }).click();
   await page.waitForTimeout(1000);
   await page.reload();
   await assertNoServerError(page, "transactions (with delete button rendered)");
+  await expect(page.getByTitle("View receipt")).toBeVisible();
 
   // Budgets — this is the flow that actually crashed in production.
   await page.goto("/budgets");
@@ -59,6 +66,21 @@ test("no page throws a server-side exception through the main flows", async ({ p
   await page.waitForTimeout(1000);
   await page.reload();
   await assertNoServerError(page, "budgets (after save, with delete-budget button rendered)");
+
+  // Budget templates — apply one to a different month so it doesn't clobber the manual test above.
+  const nextMonthDate = new Date();
+  nextMonthDate.setMonth(nextMonthDate.getMonth() + 1);
+  const templateMonth = nextMonthDate.getMonth() + 1;
+  const templateYear = nextMonthDate.getFullYear();
+  await page.goto(`/budgets?month=${templateMonth}&year=${templateYear}`);
+  await page.getByRole("button", { name: "Use a template" }).click();
+  await page.getByLabel("Monthly income (USD)").fill("4000");
+  await expect(page.getByText("Housing").first()).toBeVisible();
+  await page.getByRole("button", { name: "Apply template" }).click();
+  await page.waitForTimeout(1000);
+  await page.reload();
+  await assertNoServerError(page, "budgets (after applying a template)");
+  await expect(page.getByText("Housing").first()).toBeVisible();
 
   // Savings goals
   await page.goto("/savings-goals");
@@ -102,6 +124,12 @@ test("no page throws a server-side exception through the main flows", async ({ p
   await page.waitForTimeout(1000);
   await page.reload();
   await assertNoServerError(page, "household detail (with delete-expense button rendered)");
+
+  // Leaving as the sole member deletes the household and redirects safely.
+  await page.getByRole("button", { name: "Leave" }).click();
+  await page.waitForURL(/\/household$/, { timeout: 15000 });
+  await assertNoServerError(page, "household list (after leaving/deleting the sole-member household)");
+  await expect(page.getByText("Verify Household")).not.toBeVisible();
 
   // Recurring, reports, tools, settings — just confirm they render.
   for (const path of ["/recurring", "/reports", "/tools", "/settings"]) {

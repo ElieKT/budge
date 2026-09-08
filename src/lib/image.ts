@@ -30,3 +30,30 @@ export async function resizeImageToSquareJpeg(file: File, maxDimension = 512, qu
     );
   });
 }
+
+/**
+ * Same idea as resizeImageToSquareJpeg, but for receipts — no square crop
+ * (a receipt's aspect ratio matters, cropping it could cut off real
+ * content), just scaled down so the longest side fits maxDimension.
+ */
+export async function resizeImagePreservingAspect(file: File, maxDimension = 1400, quality = 0.82): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+  const width = Math.round(bitmap.width * scale);
+  const height = Math.round(bitmap.height * scale);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas not supported in this browser.");
+  ctx.drawImage(bitmap, 0, 0, width, height);
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error("Failed to encode image."))),
+      "image/jpeg",
+      quality,
+    );
+  });
+}

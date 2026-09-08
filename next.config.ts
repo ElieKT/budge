@@ -19,10 +19,11 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       // Default is 1MB, which silently rejects most real photo uploads
-      // before our own avatar-size validation ever runs. The client
-      // resizes images before upload (src/lib/image.ts), so this is
-      // headroom for that resized output, not an invitation to skip it.
-      bodySizeLimit: "4mb",
+      // before our own size validation ever runs. The client resizes
+      // images before upload (src/lib/image.ts) — avatars and receipts
+      // both — so this is headroom for that resized output, not an
+      // invitation to skip it. Receipts are the larger of the two.
+      bodySizeLimit: "6mb",
     },
   },
   async headers() {

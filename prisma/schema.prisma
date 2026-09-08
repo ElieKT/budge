@@ -182,6 +182,12 @@ model Transaction {
   notes       String?
   categoryId  String?
 
+  // A user-uploaded receipt photo, resized client-side and stored as a
+  // data URL (same pattern as User.image — see src/lib/image.ts). Fine at
+  // personal-app scale; a real object-storage service (S3-compatible)
+  // would be the next step if per-user data volume grows significantly.
+  receiptUrl String? @db.Text
+
   recurringTransactionId String?
 
   createdAt DateTime @default(now())

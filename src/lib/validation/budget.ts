@@ -25,3 +25,10 @@ export const copyBudgetSchema = z.object({
   toMonth: z.coerce.number().int().min(1).max(12),
   toYear: z.coerce.number().int().min(2000).max(2100),
 });
+
+export const applyBudgetTemplateSchema = z.object({
+  templateKey: z.enum(["BALANCED", "BARE_BONES", "AGGRESSIVE_SAVER"]),
+  monthlyIncome: positiveAmountString,
+  month: z.coerce.number().int().min(1).max(12),
+  year: z.coerce.number().int().min(2000).max(2100),
+});

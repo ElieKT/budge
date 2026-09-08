@@ -8,10 +8,14 @@ export function ConfirmDeleteButton({
   action,
   confirmMessage = "This can't be undone. Delete it anyway?",
   label = "Delete",
+  pendingLabel,
+  onSuccess,
 }: {
   action: () => Promise<ActionResult>;
   confirmMessage?: string;
   label?: string;
+  pendingLabel?: string;
+  onSuccess?: () => void;
 }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -28,11 +32,15 @@ export function ConfirmDeleteButton({
           setError(null);
           startTransition(async () => {
             const result = await action();
-            if (!result.ok) setError(result.error);
+            if (!result.ok) {
+              setError(result.error);
+              return;
+            }
+            onSuccess?.();
           });
         }}
       >
-        {pending ? "Deleting…" : label}
+        {pending ? (pendingLabel ?? "Deleting…") : label}
       </Button>
       {error && <span className="text-xs text-expense">{error}</span>}
     </div>
