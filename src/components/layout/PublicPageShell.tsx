@@ -5,10 +5,7 @@ export function PublicPageShell({ title, children }: { title: string; children: 
   return (
     <div className="min-h-dvh bg-white dark:bg-slate-950">
       <header className="mx-auto flex max-w-3xl items-center justify-between px-4 py-5">
-        <Link
-          href="/"
-          className="bg-gradient-to-r from-brand-400 to-teal-500 bg-clip-text text-2xl font-extrabold tracking-tight text-transparent"
-        >
+        <Link href="/" className="text-2xl font-semibold" style={{ color: "var(--accent)" }}>
           💰 Budge
         </Link>
         <Link href="/dashboard" className="text-sm font-medium text-slate-500 hover:underline dark:text-slate-400">

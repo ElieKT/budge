@@ -21,9 +21,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-dvh bg-white dark:bg-slate-950">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5">
-        <span className="bg-gradient-to-r from-brand-400 to-teal-500 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent">
-          💰 Budge
-        </span>
+        <span className="text-2xl font-semibold" style={{ color: "var(--accent)" }}>💰 Budge</span>
         <nav className="flex items-center gap-2">
           <Link href="/login">
             <Button variant="ghost" size="sm">Sign in</Button>
@@ -118,9 +116,7 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl px-4 py-10">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
             <div>
-              <span className="bg-gradient-to-r from-brand-400 to-teal-500 bg-clip-text text-xl font-extrabold tracking-tight text-transparent">
-                💰 Budge
-              </span>
+              <span className="text-lg font-semibold" style={{ color: "var(--accent)" }}>💰 Budge</span>
               <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Personal budgeting, done honestly.</p>
             </div>
             <div>

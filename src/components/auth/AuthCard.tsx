@@ -15,10 +15,7 @@ export function AuthCard({
     <div className="flex min-h-dvh items-center justify-center bg-muted px-4 py-10">
       <div className="w-full max-w-sm">
         <div className="mb-6 text-center">
-          <Link
-            href="/"
-            className="bg-gradient-to-r from-brand-400 to-teal-500 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent"
-          >
+          <Link href="/" className="text-2xl font-semibold text-brand-700">
             💰 Budge
           </Link>
           <h1 className="mt-3 text-xl">{title}</h1>
