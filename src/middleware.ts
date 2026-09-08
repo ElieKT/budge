@@ -12,7 +12,7 @@ const { auth } = NextAuth(authConfig);
 const AUTH_PAGES = ["/login", "/register", "/forgot-password", "/reset-password"];
 // Reachable by everyone, logged in or not — a signed-in user isn't
 // redirected away from these the way they are from /login etc.
-const ALWAYS_PUBLIC_PAGES = ["/help", "/privacy", "/terms"];
+const ALWAYS_PUBLIC_PAGES = ["/help", "/privacy", "/terms", "/security", "/changelog"];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;

@@ -123,8 +123,10 @@ export default function LandingPage() {
               <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-50">Company</h3>
               <ul className="mt-2 space-y-1.5 text-sm text-slate-500 dark:text-slate-400">
                 <li><Link href="/help" className="hover:underline">Help &amp; Support</Link></li>
+                <li><Link href="/security" className="hover:underline">Security &amp; Privacy Practices</Link></li>
                 <li><Link href="/privacy" className="hover:underline">Privacy Policy</Link></li>
                 <li><Link href="/terms" className="hover:underline">Terms of Service</Link></li>
+                <li><Link href="/changelog" className="hover:underline">Changelog</Link></li>
               </ul>
             </div>
             <div>

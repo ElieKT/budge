@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AccountMenu } from "./AccountMenu";
 import { NavLink } from "./NavLink";
+import { PrivacyModeToggle } from "@/components/privacy/PrivacyModeToggle";
 
 type NavItem = { href: string; label: string };
 
@@ -27,8 +28,9 @@ export function AppShell({
     <div className="min-h-dvh bg-muted dark:bg-slate-950">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 lg:flex">
-        <div className="flex h-16 items-center gap-2 px-5">
+        <div className="flex h-16 items-center justify-between gap-2 px-5">
           <span className="text-2xl font-semibold" style={{ color: "var(--accent)" }}>💰 Budge</span>
+          <PrivacyModeToggle />
         </div>
         <nav className="flex-1 space-y-1 px-3">
           {navItems.map((item) => (
@@ -50,14 +52,17 @@ export function AppShell({
       {/* Mobile top bar */}
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900 lg:hidden">
         <span className="text-lg font-semibold" style={{ color: "var(--accent)" }}>💰 Budge</span>
-        <button
-          type="button"
-          aria-label="Open menu"
-          onClick={() => setMobileMenuOpen(true)}
-          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-        >
-          ☰
-        </button>
+        <div className="flex items-center gap-1">
+          <PrivacyModeToggle />
+          <button
+            type="button"
+            aria-label="Open menu"
+            onClick={() => setMobileMenuOpen(true)}
+            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            ☰
+          </button>
+        </div>
       </header>
 
       {mobileMenuOpen && (

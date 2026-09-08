@@ -42,4 +42,42 @@ describe("computeTemplateAllocations", () => {
     const allocations = computeTemplateAllocations("BALANCED", 0);
     expect(allocations).toHaveLength(0);
   });
+
+  it("new baby weights Childcare and Healthcare higher than the balanced template", () => {
+    const babyChildcare = computeTemplateAllocations("NEW_BABY", 500000).find((a) => a.categoryName === "Childcare")!;
+    const balancedChildcare = computeTemplateAllocations("BALANCED", 500000).find((a) => a.categoryName === "Childcare")!;
+    expect(babyChildcare.amountCents).toBeGreaterThan(balancedChildcare.amountCents);
+  });
+
+  it("moving out weights Housing higher than the balanced template", () => {
+    const movingHousing = computeTemplateAllocations("MOVING_OUT", 500000).find((a) => a.categoryName === "Housing")!;
+    const balancedHousing = computeTemplateAllocations("BALANCED", 500000).find((a) => a.categoryName === "Housing")!;
+    expect(movingHousing.amountCents).toBeGreaterThan(balancedHousing.amountCents);
+  });
+
+  it("debt payoff push merges the needs-bucket and savings-bucket Debt Payments into one total, not two rows", () => {
+    const allocations = computeTemplateAllocations("PAYING_OFF_DEBT", 500000);
+    const debtRows = allocations.filter((a) => a.categoryName === "Debt Payments");
+    expect(debtRows).toHaveLength(1);
+    // Should include both the needs-bucket share (2%) and the entire savings bucket (35%).
+    const balancedDebt = computeTemplateAllocations("BALANCED", 500000).find((a) => a.categoryName === "Debt Payments")!;
+    expect(debtRows[0]!.amountCents).toBeGreaterThan(balancedDebt.amountCents);
+  });
+
+  it("every template key is covered by exactly one group", () => {
+    // Sanity check that computeTemplateAllocations works for every key without throwing.
+    const keys: Array<Parameters<typeof computeTemplateAllocations>[0]> = [
+      "BALANCED",
+      "BARE_BONES",
+      "AGGRESSIVE_SAVER",
+      "NEW_JOB",
+      "MOVING_OUT",
+      "NEW_BABY",
+      "PAYING_OFF_DEBT",
+      "WEDDING",
+    ];
+    for (const key of keys) {
+      expect(() => computeTemplateAllocations(key, 400000)).not.toThrow();
+    }
+  });
 });

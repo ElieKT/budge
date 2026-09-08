@@ -63,4 +63,20 @@
   .amount-expense {
     @apply text-expense;
   }
+
+  /* Privacy mode (see PrivacyModeToggle) — blurs figures across the app
+     rather than rewriting every component that renders one. Every money
+     amount, balance, and stat in this codebase is styled `tabular-nums`
+     for column alignment, which doubles conveniently as the hook here.
+     Hover/tap (or focus, for keyboard users) peeks at a single value. */
+  .privacy-mode .tabular-nums {
+    filter: blur(6px);
+    transition: filter 0.15s ease;
+    cursor: pointer;
+  }
+  .privacy-mode .tabular-nums:hover,
+  .privacy-mode .tabular-nums:focus-visible,
+  .privacy-mode .tabular-nums:active {
+    filter: none;
+  }
 }

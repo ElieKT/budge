@@ -10,6 +10,7 @@ import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteButton";
 import { SavingsGoalForm } from "./SavingsGoalForm";
 import { deleteSavingsGoal, markSavingsGoalComplete, updateSavingsGoal, updateSavingsProgress } from "@/server/actions/savingsGoals";
 import { UpdateProgressForm } from "./UpdateProgressForm";
+import { ShareProgressButton } from "./ShareProgressButton";
 
 type Goal = {
   id: string;
@@ -68,6 +69,7 @@ export function SavingsGoalCard({ goal, currency = "USD" }: { goal: Goal; curren
         <button type="button" onClick={() => setEditing(true)} className="text-sm font-medium text-brand-600 hover:underline">
           Edit
         </button>
+        <ShareProgressButton goal={goal} currency={currency} />
         <ConfirmDeleteButton action={() => deleteSavingsGoal(goal.id)} confirmMessage="Delete this savings goal? This can't be undone." />
       </div>
 

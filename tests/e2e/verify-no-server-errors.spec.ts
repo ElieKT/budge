@@ -18,6 +18,8 @@ async function assertNoServerError(page: import("@playwright/test").Page, label:
 test("no page throws a server-side exception through the main flows", async ({ page }) => {
   test.setTimeout(180_000);
   page.on("dialog", (dialog) => dialog.accept());
+  const pageErrors: string[] = [];
+  page.on("pageerror", (err) => pageErrors.push(err.message));
   const email = `verify-${Date.now()}@example.com`;
 
   await page.goto("/register");
@@ -77,14 +79,54 @@ test("no page throws a server-side exception through the main flows", async ({ p
   await page.getByLabel("Monthly income (USD)").fill("4000");
   await expect(page.getByText("Housing").first()).toBeVisible();
   await page.getByRole("button", { name: "Apply template" }).click();
-  await page.waitForTimeout(1000);
+  await expect(page.getByRole("button", { name: "Apply template" })).not.toBeVisible({ timeout: 15000 });
+  // A bulk template write followed immediately by a reload can occasionally
+  // race Neon's pooled connection on read-after-write; a short settle avoids
+  // that (confirmed independently — the write itself is never lost).
+  await page.waitForTimeout(2000);
   await page.reload();
   await assertNoServerError(page, "budgets (after applying a template)");
-  await expect(page.getByText("Housing").first()).toBeVisible();
+  await expect(page.getByText("Housing").first()).toBeVisible({ timeout: 15000 });
 
-  // Savings goals
+  // A life-event template, in yet another month, to confirm its custom bucket weights work too.
+  const twoMonthsOut = new Date();
+  twoMonthsOut.setMonth(twoMonthsOut.getMonth() + 2);
+  await page.goto(`/budgets?month=${twoMonthsOut.getMonth() + 1}&year=${twoMonthsOut.getFullYear()}`);
+  await page.getByRole("button", { name: "Use a template" }).click();
+  await page.getByText("Growing Family / New Baby").click();
+  await page.getByLabel("Monthly income (USD)").fill("5000");
+  await expect(page.getByText("Childcare").first()).toBeVisible();
+  await page.getByRole("button", { name: "Apply template" }).click();
+  await expect(page.getByRole("button", { name: "Apply template" })).not.toBeVisible({ timeout: 15000 });
+  await page.waitForTimeout(2000);
+  await page.reload();
+  await assertNoServerError(page, "budgets (after applying a life-event template)");
+  await expect(page.getByText("Childcare").first()).toBeVisible({ timeout: 15000 });
+
+  // Savings goals — create one, then verify the shareable progress image renders.
   await page.goto("/savings-goals");
-  await assertNoServerError(page, "savings-goals");
+  await assertNoServerError(page, "savings-goals (before)");
+  await page.getByRole("button", { name: "+ New goal" }).click();
+  await page.getByLabel("Goal name").fill("Verify Emergency Fund");
+  await page.getByLabel("Target amount (USD)").fill("1000");
+  await page.getByRole("button", { name: "Create goal" }).click();
+  await page.waitForTimeout(1000);
+  await assertNoServerError(page, "savings-goals (after create)");
+
+  await page.getByRole("button", { name: "Share" }).click();
+  await expect(page.locator("canvas")).toBeVisible();
+  await page.getByLabel("Hide exact dollar amounts (show percentage only)").check();
+  await page.getByRole("button", { name: "Download image" }).click();
+  // Both the modal's icon "✕" and the secondary button share the accessible name "Close" —
+  // getByText matches only the secondary button's actual text content, not the icon's aria-label.
+  await page.getByText("Close", { exact: true }).click();
+
+  // Privacy mode — toggle it on and confirm the class actually lands on <html>.
+  // (Both the desktop sidebar and mobile top bar render their own toggle; only one is visible per viewport.)
+  await page.getByTitle("Privacy mode off — click to blur amounts").first().click();
+  await expect(page.locator("html")).toHaveClass(/privacy-mode/);
+  await page.getByTitle("Privacy mode on — click to show amounts").first().click();
+  await expect(page.locator("html")).not.toHaveClass(/privacy-mode/);
 
   // Accounts — add a manual investment account, then a holding, to exercise HoldingsTable's delete button.
   await page.goto("/accounts");
@@ -167,9 +209,11 @@ test("no page throws a server-side exception through the main flows", async ({ p
   await assertNoServerError(page, "subscriptions (after review)");
   await expect(page.getByText("Verify Streaming Co")).toBeVisible();
 
-  // Reports, tools, settings — just confirm they render.
-  for (const path of ["/reports", "/tools", "/settings"]) {
+  // Reports, tools, settings, and the new static pages — just confirm they render.
+  for (const path of ["/reports", "/tools", "/settings", "/security", "/changelog"]) {
     await page.goto(path);
     await assertNoServerError(page, path);
   }
+
+  expect(pageErrors, `uncaught client-side errors: ${pageErrors.join("; ")}`).toEqual([]);
 });

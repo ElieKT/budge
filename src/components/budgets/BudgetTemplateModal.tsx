@@ -58,22 +58,31 @@ export function BudgetTemplateModal({
               this replaces this month&apos;s budget for the categories it covers.
             </p>
 
-            <div className="space-y-2">
-              {(Object.keys(BUDGET_TEMPLATES) as BudgetTemplateKey[]).map((key) => {
-                const t = BUDGET_TEMPLATES[key];
-                return (
-                  <label
-                    key={key}
-                    className={`block cursor-pointer rounded-lg border px-3 py-2 text-sm ${
-                      templateKey === key ? "border-brand-500 bg-brand-50 dark:bg-brand-950" : "border-slate-200 dark:border-slate-700"
-                    }`}
-                  >
-                    <input type="radio" name="template" className="sr-only" checked={templateKey === key} onChange={() => setTemplateKey(key)} />
-                    <span className="font-medium text-slate-800 dark:text-slate-100">{t.name}</span>
-                    <span className="block text-xs text-slate-500 dark:text-slate-400">{t.description}</span>
-                  </label>
-                );
-              })}
+            <div className="max-h-64 space-y-4 overflow-y-auto pr-1">
+              {(["General", "Life events"] as const).map((group) => (
+                <div key={group}>
+                  <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-400">{group}</p>
+                  <div className="space-y-2">
+                    {(Object.keys(BUDGET_TEMPLATES) as BudgetTemplateKey[])
+                      .filter((key) => BUDGET_TEMPLATES[key].group === group)
+                      .map((key) => {
+                        const t = BUDGET_TEMPLATES[key];
+                        return (
+                          <label
+                            key={key}
+                            className={`block cursor-pointer rounded-lg border px-3 py-2 text-sm ${
+                              templateKey === key ? "border-brand-500 bg-brand-50 dark:bg-brand-950" : "border-slate-200 dark:border-slate-700"
+                            }`}
+                          >
+                            <input type="radio" name="template" className="sr-only" checked={templateKey === key} onChange={() => setTemplateKey(key)} />
+                            <span className="font-medium text-slate-800 dark:text-slate-100">{t.name}</span>
+                            <span className="block text-xs text-slate-500 dark:text-slate-400">{t.description}</span>
+                          </label>
+                        );
+                      })}
+                  </div>
+                </div>
+              ))}
             </div>
 
             <TextField
