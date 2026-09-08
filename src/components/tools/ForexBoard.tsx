@@ -54,16 +54,31 @@ export function ForexBoard() {
       {pending && rates.length === 0 ? (
         <p className="text-sm text-slate-400">Loading rates…</p>
       ) : (
-        <div className="max-h-64 overflow-y-auto">
-          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 sm:grid-cols-3">
-            {rates.map((r) => (
-              <div key={r.code} className="flex items-center justify-between text-sm">
+        <>
+          {/* Top 5 always visible, no scrolling needed to see them. */}
+          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+            {rates.slice(0, 5).map((r) => (
+              <div key={r.code} className="flex items-center justify-between py-1.5 text-sm">
                 <span className="text-slate-500 dark:text-slate-400">{r.code}</span>
                 <span className="tabular-nums font-medium text-slate-800 dark:text-slate-100">{r.rate.toFixed(4)}</span>
               </div>
             ))}
           </div>
-        </div>
+
+          {/* Everything else — scrolls within a fixed height. */}
+          {rates.length > 5 && (
+            <div className="mt-2 max-h-48 overflow-y-auto border-t border-slate-100 pt-2 dark:border-slate-800">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 sm:grid-cols-3">
+                {rates.slice(5).map((r) => (
+                  <div key={r.code} className="flex items-center justify-between text-sm">
+                    <span className="text-slate-500 dark:text-slate-400">{r.code}</span>
+                    <span className="tabular-nums font-medium text-slate-800 dark:text-slate-100">{r.rate.toFixed(4)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       <p className="mt-4 text-xs text-slate-400">
