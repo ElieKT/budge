@@ -131,8 +131,44 @@ test("no page throws a server-side exception through the main flows", async ({ p
   await assertNoServerError(page, "household list (after leaving/deleting the sole-member household)");
   await expect(page.getByText("Verify Household")).not.toBeVisible();
 
-  // Recurring, reports, tools, settings — just confirm they render.
-  for (const path of ["/recurring", "/reports", "/tools", "/settings"]) {
+  // Debt payoff planner — add a debt, verify the calculator computes a plan.
+  await page.goto("/debt-payoff");
+  await assertNoServerError(page, "debt-payoff (before)");
+  await page.getByRole("button", { name: "+ Add debt" }).click();
+  await page.getByLabel("Debt name").fill("Verify Card");
+  await page.getByLabel("Balance owed (USD)").fill("2000");
+  await page.getByLabel("APR (%)").fill("22");
+  await page.getByLabel("Minimum monthly payment (USD)").fill("100");
+  await page.getByRole("button", { name: "Add debt", exact: true }).click();
+  await page.waitForTimeout(1000);
+  await page.reload();
+  await assertNoServerError(page, "debt-payoff (after add, with delete button rendered)");
+  await expect(page.getByText("Verify Card").first()).toBeVisible();
+  await expect(page.getByText("Debt-free in")).toBeVisible();
+  await expect(page.getByText("Total interest paid")).toBeVisible();
+
+  // Recurring — add a subscription-like expense, then verify it surfaces on the Subscriptions radar.
+  await page.goto("/recurring");
+  await assertNoServerError(page, "recurring (before)");
+  await page.getByRole("button", { name: "+ New recurring transaction" }).click();
+  await page.getByLabel("Amount (USD)").fill("15.99");
+  await page.getByLabel("Merchant").fill("Verify Streaming Co");
+  await page.getByRole("button", { name: "Create recurring transaction" }).click();
+  await page.waitForTimeout(1000);
+  await page.reload();
+  await assertNoServerError(page, "recurring (after add)");
+
+  await page.goto("/subscriptions");
+  await assertNoServerError(page, "subscriptions (before review)");
+  await expect(page.getByText("Verify Streaming Co")).toBeVisible();
+  await page.getByRole("button", { name: "Reviewed" }).first().click();
+  await page.waitForTimeout(1000);
+  await page.reload();
+  await assertNoServerError(page, "subscriptions (after review)");
+  await expect(page.getByText("Verify Streaming Co")).toBeVisible();
+
+  // Reports, tools, settings — just confirm they render.
+  for (const path of ["/reports", "/tools", "/settings"]) {
     await page.goto(path);
     await assertNoServerError(page, path);
   }

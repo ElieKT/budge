@@ -48,6 +48,7 @@ model User {
   householdMemberships   HouseholdMember[]
   paidSharedExpenses     SharedExpense[]      @relation("SharedExpensePayer")
   sharedExpenseSplits    SharedExpenseSplit[] @relation("SharedExpenseSplitUser")
+  debts                  Debt[]
 
   @@index([email])
 }
@@ -267,6 +268,25 @@ model SavingsGoal {
   @@index([userId])
 }
 
+// A single debt balance (credit card, loan, etc.) entered manually for the
+// debt payoff planner. Deliberately separate from FinancialAccount — a debt
+// here needs an APR and minimum payment to simulate a payoff schedule,
+// neither of which a net-worth account tracks.
+model Debt {
+  id         String   @id @default(cuid())
+  userId     String
+  name       String
+  balance    Int // minor units, current amount owed
+  apr        Float // annual percentage rate as a whole number, e.g. 24.99
+  minPayment Int // minor units, minimum monthly payment
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
 // ---------------------------------------------------------------------------
 // Recurring transactions
 // ---------------------------------------------------------------------------
@@ -293,6 +313,11 @@ model RecurringTransaction {
   endDate     DateTime?
   nextRunDate DateTime
   isActive    Boolean             @default(true)
+  // Last time the user confirmed (via the Subscriptions page) that they
+  // still want/use this recurring bill. Null means never reviewed. Used to
+  // flag stale recurring expenses ("still using this?") rather than any
+  // real usage-detection, which this app has no way to observe.
+  lastReviewedAt DateTime?
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
 
