@@ -50,7 +50,7 @@ export function HoldingsTable({ holdings, currency = "USD" }: { holdings: Holdin
                   {gain == null ? "—" : `${gain >= 0 ? "+" : "−"}${formatCurrency(Math.abs(gain), currency)}`}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <ConfirmDeleteButton action={() => deleteInvestmentHolding(h.id)} confirmMessage="Remove this holding?" />
+                  <ConfirmDeleteButton action={deleteInvestmentHolding.bind(null, h.id)} confirmMessage="Remove this holding?" />
                 </td>
               </tr>
             );

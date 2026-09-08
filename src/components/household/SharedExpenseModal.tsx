@@ -79,13 +79,13 @@ export function SharedExpenseModal({ householdId, members }: { householdId: stri
               <div className="space-y-2">
                 {members.map((m) => (
                   <div key={m.userId} className="flex items-center gap-2">
-                    <span className="flex-1 truncate text-sm text-slate-600">{m.name}</span>
+                    <span className="flex-1 truncate text-sm text-slate-600 dark:text-slate-300">{m.name}</span>
                     <input
                       inputMode="decimal"
                       placeholder="0.00"
                       value={splits[m.userId] ?? ""}
                       onChange={(e) => setSplits((prev) => ({ ...prev, [m.userId]: e.target.value }))}
-                      className="w-28 rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
+                      className="w-28 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                     />
                   </div>
                 ))}

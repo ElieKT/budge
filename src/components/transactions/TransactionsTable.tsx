@@ -81,7 +81,7 @@ export function TransactionsTable({
                       notes: t.notes ?? "",
                     }}
                   />
-                  <ConfirmDeleteButton action={() => deleteTransaction(t.id)} confirmMessage="Delete this transaction? This can't be undone." />
+                  <ConfirmDeleteButton action={deleteTransaction.bind(null, t.id)} confirmMessage="Delete this transaction? This can't be undone." />
                 </div>
               </td>
             </tr>

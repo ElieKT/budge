@@ -44,7 +44,7 @@ export default async function BudgetsPage({
           {!budget.budgetId && <CopyBudgetButton year={year} month={month} />}
           {budget.budgetId && (
             <ConfirmDeleteButton
-              action={() => deleteMonthlyBudget(budget.budgetId as string)}
+              action={deleteMonthlyBudget.bind(null, budget.budgetId as string)}
               label="Delete budget"
               confirmMessage="Delete this month's entire budget? This can't be undone."
             />

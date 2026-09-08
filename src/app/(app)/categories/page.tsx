@@ -31,7 +31,7 @@ export default async function CategoriesPage() {
                 <div className="flex items-center gap-3">
                   <EditCategoryButton categoryId={c.id} defaultValues={{ name: c.name, kind: c.kind, color: c.color }} />
                   <ConfirmDeleteButton
-                    action={() => deleteCategory(c.id)}
+                    action={deleteCategory.bind(null, c.id)}
                     confirmMessage="Delete this category? Existing transactions will become uncategorized."
                   />
                 </div>

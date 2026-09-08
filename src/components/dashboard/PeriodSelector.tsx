@@ -29,11 +29,11 @@ export function PeriodSelector() {
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
       <label className="flex items-center gap-2">
-        <span className="text-slate-500">Period</span>
+        <span className="text-slate-500 dark:text-slate-400">Period</span>
         <select
           value={current}
           onChange={(e) => onChange(e.target.value)}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm shadow-sm"
+          className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
         >
           {PERIOD_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -49,7 +49,7 @@ export function PeriodSelector() {
             aria-label="From date"
             defaultValue={searchParams.get("from") ?? ""}
             onChange={(e) => onCustomDateChange("from", e.target.value)}
-            className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm shadow-sm"
+            className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
           <span className="text-slate-400">–</span>
           <input
@@ -57,7 +57,7 @@ export function PeriodSelector() {
             aria-label="To date"
             defaultValue={searchParams.get("to") ?? ""}
             onChange={(e) => onCustomDateChange("to", e.target.value)}
-            className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm shadow-sm"
+            className="rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           />
         </>
       )}

@@ -77,7 +77,7 @@ export function BudgetEditorModal({
                     <select
                       value={row.categoryId}
                       onChange={(e) => updateRow(i, { categoryId: e.target.value })}
-                      className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm"
+                      className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                     >
                       {categories.map((c) => (
                         <option key={c.id} value={c.id}>{c.name}</option>
@@ -91,7 +91,7 @@ export function BudgetEditorModal({
                       placeholder="0.00"
                       value={row.amount}
                       onChange={(e) => updateRow(i, { amount: e.target.value })}
-                      className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm"
+                      className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                     />
                   </div>
                   <button type="button" onClick={() => removeRow(i)} aria-label="Remove category" className="mb-0.5 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-expense">

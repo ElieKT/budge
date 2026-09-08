@@ -52,7 +52,7 @@ export default async function HouseholdDetailPage({ params }: { params: Promise<
                 </span>
                 {m.userId !== userId && (
                   <ConfirmDeleteButton
-                    action={() => removeHouseholdMember(household.id, m.userId)}
+                    action={removeHouseholdMember.bind(null, household.id, m.userId)}
                     label="Remove"
                     confirmMessage="Remove this member from the household?"
                   />
@@ -81,7 +81,7 @@ export default async function HouseholdDetailPage({ params }: { params: Promise<
                   <div className="flex items-center gap-3">
                     <span className="font-semibold tabular-nums text-slate-800 dark:text-slate-100">{formatCurrency(e.amount, currency)}</span>
                     <ConfirmDeleteButton
-                      action={() => deleteSharedExpense(household.id, e.id)}
+                      action={deleteSharedExpense.bind(null, household.id, e.id)}
                       confirmMessage="Delete this shared expense?"
                     />
                   </div>

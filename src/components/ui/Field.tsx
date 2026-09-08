@@ -1,6 +1,14 @@
 import { clsx } from "clsx";
 import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 
+// Shared by every text input, textarea, and select below — keeps every
+// form control in the app readable in dark mode from one place, instead
+// of each one needing its own dark: classes.
+const CONTROL_BASE =
+  "block w-full rounded-lg border px-3 py-2 text-sm shadow-sm bg-white text-slate-900 placeholder:text-slate-400 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-500";
+const CONTROL_BORDER = "border-slate-300 focus:border-brand-500 dark:border-slate-700";
+const CONTROL_BORDER_ERROR = "border-expense focus:border-expense";
+
 function ErrorText({ errors }: { errors?: string[] }) {
   if (!errors?.length) return null;
   return <p className="field-error">{errors[0]}</p>;
@@ -21,12 +29,7 @@ export function TextField({
       <input
         id={name}
         name={name}
-        className={clsx(
-          "block w-full rounded-lg border px-3 py-2 text-sm shadow-sm",
-          errors?.length
-            ? "border-expense focus:border-expense"
-            : "border-slate-300 focus:border-brand-500",
-        )}
+        className={clsx(CONTROL_BASE, errors?.length ? CONTROL_BORDER_ERROR : CONTROL_BORDER)}
         {...props}
       />
       <ErrorText errors={errors} />
@@ -49,12 +52,7 @@ export function TextAreaField({
       <textarea
         id={name}
         name={name}
-        className={clsx(
-          "block w-full rounded-lg border px-3 py-2 text-sm shadow-sm",
-          errors?.length
-            ? "border-expense focus:border-expense"
-            : "border-slate-300 focus:border-brand-500",
-        )}
+        className={clsx(CONTROL_BASE, errors?.length ? CONTROL_BORDER_ERROR : CONTROL_BORDER)}
         rows={3}
         {...props}
       />
@@ -83,12 +81,7 @@ export function SelectField({
       <select
         id={name}
         name={name}
-        className={clsx(
-          "block w-full rounded-lg border bg-white px-3 py-2 text-sm shadow-sm",
-          errors?.length
-            ? "border-expense focus:border-expense"
-            : "border-slate-300 focus:border-brand-500",
-        )}
+        className={clsx(CONTROL_BASE, errors?.length ? CONTROL_BORDER_ERROR : CONTROL_BORDER)}
         {...props}
       >
         {children}
@@ -103,7 +96,9 @@ export function FormBanner({ message, tone = "error" }: { message: string; tone?
     <div
       className={clsx(
         "rounded-lg px-3 py-2 text-sm",
-        tone === "error" ? "bg-red-50 text-red-700" : "bg-brand-50 text-brand-700",
+        tone === "error"
+          ? "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300"
+          : "bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300",
       )}
       role={tone === "error" ? "alert" : "status"}
     >

@@ -13,6 +13,12 @@
   body {
     @apply bg-muted text-slate-900 antialiased transition-colors;
   }
+  .dark {
+    /* Tells the browser to use its dark UA styles for anything we don't
+       explicitly theme ourselves — native date pickers, scrollbars,
+       an <input> with no explicit background, etc. */
+    color-scheme: dark;
+  }
   .dark body {
     @apply bg-slate-950 text-slate-100;
   }

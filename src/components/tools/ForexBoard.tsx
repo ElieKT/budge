@@ -39,7 +39,7 @@ export function ForexBoard() {
           <select
             value={base}
             onChange={(e) => setBase(e.target.value)}
-            className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-800"
+            className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
           >
             {CURRENCIES.map((c) => (
               <option key={c.code} value={c.code}>{c.code}</option>
@@ -54,13 +54,15 @@ export function ForexBoard() {
       {pending && rates.length === 0 ? (
         <p className="text-sm text-slate-400">Loading rates…</p>
       ) : (
-        <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 sm:grid-cols-3">
-          {rates.map((r) => (
-            <div key={r.code} className="flex items-center justify-between text-sm">
-              <span className="text-slate-500">{r.code}</span>
-              <span className="tabular-nums font-medium text-slate-800 dark:text-slate-100">{r.rate.toFixed(4)}</span>
-            </div>
-          ))}
+        <div className="max-h-64 overflow-y-auto">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 sm:grid-cols-3">
+            {rates.map((r) => (
+              <div key={r.code} className="flex items-center justify-between text-sm">
+                <span className="text-slate-500 dark:text-slate-400">{r.code}</span>
+                <span className="tabular-nums font-medium text-slate-800 dark:text-slate-100">{r.rate.toFixed(4)}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

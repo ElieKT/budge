@@ -3,6 +3,9 @@
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
+const CONTROL_CLASS =
+  "block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100";
+
 export function TransactionFilters({ categories }: { categories: { id: string; name: string }[] }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -31,12 +34,12 @@ export function TransactionFilters({ categories }: { categories: { id: string; n
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && update({ search })}
           onBlur={() => update({ search })}
-          className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm"
+          className={CONTROL_CLASS}
         />
       </div>
       <div>
         <label className="label" htmlFor="type">Type</label>
-        <select id="type" defaultValue={searchParams.get("type") ?? "ALL"} onChange={(e) => update({ type: e.target.value })} className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm">
+        <select id="type" defaultValue={searchParams.get("type") ?? "ALL"} onChange={(e) => update({ type: e.target.value })} className={CONTROL_CLASS}>
           <option value="ALL">All</option>
           <option value="INCOME">Income</option>
           <option value="EXPENSE">Expense</option>
@@ -44,7 +47,7 @@ export function TransactionFilters({ categories }: { categories: { id: string; n
       </div>
       <div>
         <label className="label" htmlFor="categoryId">Category</label>
-        <select id="categoryId" defaultValue={searchParams.get("categoryId") ?? ""} onChange={(e) => update({ categoryId: e.target.value })} className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm">
+        <select id="categoryId" defaultValue={searchParams.get("categoryId") ?? ""} onChange={(e) => update({ categoryId: e.target.value })} className={CONTROL_CLASS}>
           <option value="">All categories</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
@@ -53,7 +56,7 @@ export function TransactionFilters({ categories }: { categories: { id: string; n
       </div>
       <div>
         <label className="label" htmlFor="sort">Sort</label>
-        <select id="sort" defaultValue={searchParams.get("sort") ?? "date_desc"} onChange={(e) => update({ sort: e.target.value })} className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm">
+        <select id="sort" defaultValue={searchParams.get("sort") ?? "date_desc"} onChange={(e) => update({ sort: e.target.value })} className={CONTROL_CLASS}>
           <option value="date_desc">Newest first</option>
           <option value="date_asc">Oldest first</option>
           <option value="amount_desc">Amount: high to low</option>
@@ -62,11 +65,11 @@ export function TransactionFilters({ categories }: { categories: { id: string; n
       </div>
       <div>
         <label className="label" htmlFor="from">From</label>
-        <input id="from" type="date" defaultValue={searchParams.get("from") ?? ""} onChange={(e) => update({ from: e.target.value })} className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm" />
+        <input id="from" type="date" defaultValue={searchParams.get("from") ?? ""} onChange={(e) => update({ from: e.target.value })} className={CONTROL_CLASS} />
       </div>
       <div>
         <label className="label" htmlFor="to">To</label>
-        <input id="to" type="date" defaultValue={searchParams.get("to") ?? ""} onChange={(e) => update({ to: e.target.value })} className="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-sm" />
+        <input id="to" type="date" defaultValue={searchParams.get("to") ?? ""} onChange={(e) => update({ to: e.target.value })} className={CONTROL_CLASS} />
       </div>
     </div>
   );

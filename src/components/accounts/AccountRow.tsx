@@ -51,7 +51,7 @@ export function AccountRow({ account, currency = "USD" }: { account: Account; cu
               inputMode="decimal"
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              className="w-28 rounded-lg border border-slate-300 px-2 py-1 text-right text-sm"
+              className="w-28 rounded-lg border border-slate-300 bg-white px-2 py-1 text-right text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
             />
             <button
               type="button"
