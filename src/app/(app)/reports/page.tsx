@@ -6,6 +6,7 @@ import { PeriodSelector } from "@/components/dashboard/PeriodSelector";
 import { MonthlyTrendChart } from "@/components/dashboard/MonthlyTrendChart";
 import { CategoryPieChart } from "@/components/dashboard/CategoryPieChart";
 import { BudgetVsActualChart } from "@/components/reports/BudgetVsActualChart";
+import { getUserCurrency } from "@/server/data/preferences";
 
 export default async function ReportsPage({
   searchParams,
@@ -15,7 +16,7 @@ export default async function ReportsPage({
   const userId = await requireUserId();
   const sp = await searchParams;
   const period = resolvePeriod(sp);
-  const data = await getReportsData(userId, period);
+  const [data, currency] = await Promise.all([getReportsData(userId, period), getUserCurrency(userId)]);
 
   return (
     <div>
@@ -24,18 +25,18 @@ export default async function ReportsPage({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <section className="card">
           <h2 className="mb-4 text-base font-semibold">Income vs. expenses — last 6 months</h2>
-          <MonthlyTrendChart data={data.monthlyTrend} />
+          <MonthlyTrendChart data={data.monthlyTrend} currency={currency} />
         </section>
 
         <section className="card">
           <h2 className="mb-4 text-base font-semibold">Spending by category</h2>
-          <CategoryPieChart data={data.categoryBreakdown} />
+          <CategoryPieChart data={data.categoryBreakdown} currency={currency} />
         </section>
 
         <section className="card lg:col-span-2">
           <h2 className="mb-1 text-base font-semibold">Budget vs. actual — this month</h2>
           <p className="mb-4 text-sm text-slate-500">Compares each category&apos;s planned limit to what you&apos;ve actually spent this calendar month.</p>
-          <BudgetVsActualChart data={data.budgetVsActual.categories.map((c) => ({ name: c.name, limit: c.limit, spent: c.spent }))} />
+          <BudgetVsActualChart data={data.budgetVsActual.categories.map((c) => ({ name: c.name, limit: c.limit, spent: c.spent }))} currency={currency} />
         </section>
       </div>
 

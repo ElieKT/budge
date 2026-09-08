@@ -8,6 +8,7 @@ import { completeOnboarding, skipOnboarding } from "@/server/actions/onboarding"
 import { saveMonthlyBudget } from "@/server/actions/budgets";
 import { createTransaction } from "@/server/actions/transactions";
 import { createSavingsGoal } from "@/server/actions/savingsGoals";
+import { CURRENCIES } from "@/lib/currencies";
 
 type Category = { id: string; name: string };
 
@@ -19,6 +20,7 @@ export function OnboardingWizard({ expenseCategories }: { expenseCategories: Cat
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  const [currency, setCurrency] = useState("USD");
   const [monthlyIncome, setMonthlyIncome] = useState("");
   const [budgetCategoryId, setBudgetCategoryId] = useState(expenseCategories[0]?.id ?? "");
   const [budgetAmount, setBudgetAmount] = useState("");
@@ -39,7 +41,7 @@ export function OnboardingWizard({ expenseCategories }: { expenseCategories: Cat
   function finish() {
     startTransition(async () => {
       const fd = new FormData();
-      fd.set("currency", "USD");
+      fd.set("currency", currency);
       if (monthlyIncome) fd.set("monthlyIncomeEstimate", monthlyIncome);
       const result = await completeOnboarding(undefined, fd);
       if (!result.ok) {
@@ -124,12 +126,15 @@ export function OnboardingWizard({ expenseCategories }: { expenseCategories: Cat
         <div>
           <h2 className="text-base font-semibold">Your currency</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Budge supports US Dollars (USD) in this release. Support for additional currencies is
-            planned — the data model already tracks a currency per transaction.
+            This sets how amounts are displayed. You can change it later in Settings — note it
+            doesn&apos;t convert amounts you&apos;ve already entered, it just changes the label going
+            forward.
           </p>
-          <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium">
-            $ USD — US Dollar
-          </div>
+          <SelectField label="Currency" name="currency" value={currency} onChange={(e) => setCurrency(e.target.value)} className="mt-4">
+            {CURRENCIES.map((c) => (
+              <option key={c.code} value={c.code}>{c.code} — {c.name}</option>
+            ))}
+          </SelectField>
         </div>
       )}
 

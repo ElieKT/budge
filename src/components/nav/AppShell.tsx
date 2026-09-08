@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import { logoutAction } from "@/server/actions/auth";
+import { AccountMenu } from "./AccountMenu";
 import { NavLink } from "./NavLink";
 
 type NavItem = { href: string; label: string };
@@ -24,17 +23,6 @@ export function AppShell({
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const avatar = userImage ? (
-    <Image src={userImage} alt="" width={28} height={28} className="h-7 w-7 shrink-0 rounded-full object-cover" unoptimized />
-  ) : (
-    <span
-      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
-      style={{ backgroundColor: "var(--accent)" }}
-    >
-      {userName.charAt(0).toUpperCase()}
-    </span>
-  );
-
   return (
     <div className="min-h-dvh bg-muted dark:bg-slate-950">
       {/* Desktop sidebar */}
@@ -55,18 +43,7 @@ export function AppShell({
           ))}
         </nav>
         <div className="border-t border-slate-200 p-3 dark:border-slate-800">
-          <div className="flex items-center gap-2 px-3">
-            {avatar}
-            <p className="truncate text-sm text-slate-500 dark:text-slate-400">{userName}</p>
-          </div>
-          <form action={logoutAction}>
-            <button
-              type="submit"
-              className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
-            >
-              {signOutLabel}
-            </button>
-          </form>
+          <AccountMenu userName={userName} userImage={userImage} signOutLabel={signOutLabel} />
         </div>
       </aside>
 
@@ -110,18 +87,12 @@ export function AppShell({
                 />
               ))}
             </nav>
-            <div className="flex items-center gap-2 px-1 py-2">
-              {avatar}
-              <p className="truncate text-sm text-slate-500 dark:text-slate-400">{userName}</p>
-            </div>
-            <form action={logoutAction}>
-              <button
-                type="submit"
-                className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
-              >
-                {signOutLabel}
-              </button>
-            </form>
+            <AccountMenu
+              userName={userName}
+              userImage={userImage}
+              signOutLabel={signOutLabel}
+              onNavigate={() => setMobileMenuOpen(false)}
+            />
           </div>
         </div>
       )}

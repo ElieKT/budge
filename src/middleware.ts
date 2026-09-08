@@ -10,18 +10,22 @@ import { authConfig } from "@/auth.config";
 const { auth } = NextAuth(authConfig);
 
 const AUTH_PAGES = ["/login", "/register", "/forgot-password", "/reset-password"];
+// Reachable by everyone, logged in or not — a signed-in user isn't
+// redirected away from these the way they are from /login etc.
+const ALWAYS_PUBLIC_PAGES = ["/help", "/privacy", "/terms"];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth?.user;
   const isAuthPage = AUTH_PAGES.some((p) => pathname.startsWith(p));
-  const isPublicMarketingPage = pathname === "/";
+  const isHomePage = pathname === "/";
+  const isAlwaysPublicPage = ALWAYS_PUBLIC_PAGES.some((p) => pathname.startsWith(p));
 
-  if (isLoggedIn && (isAuthPage || isPublicMarketingPage)) {
+  if (isLoggedIn && (isAuthPage || isHomePage)) {
     return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
   }
 
-  if (!isLoggedIn && !isAuthPage && !isPublicMarketingPage) {
+  if (!isLoggedIn && !isAuthPage && !isHomePage && !isAlwaysPublicPage) {
     const loginUrl = new URL("/login", req.nextUrl.origin);
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
@@ -33,7 +37,8 @@ export default auth((req) => {
 export const config = {
   // Protects everything except static assets, NextAuth's own routes, and
   // the cron endpoint (authenticated by bearer token instead). "/",
-  // "/login", "/register", "/forgot-password", "/reset-password/*" are
-  // intentionally reachable and handled above.
+  // "/login", "/register", "/forgot-password", "/reset-password/*",
+  // "/help", "/privacy", and "/terms" are intentionally reachable and
+  // handled above.
   matcher: ["/((?!api/auth|api/cron|_next/static|_next/image|favicon.ico).*)"],
 };

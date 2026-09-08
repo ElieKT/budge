@@ -6,11 +6,15 @@ import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteButton";
 import { AddMemberForm } from "@/components/household/AddMemberForm";
 import { SharedExpenseModal } from "@/components/household/SharedExpenseModal";
 import { removeHouseholdMember, deleteSharedExpense } from "@/server/actions/household";
+import { getUserCurrency } from "@/server/data/preferences";
 
 export default async function HouseholdDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const userId = await requireUserId();
-  const { household, memberBalances } = await getHouseholdDetail(id, userId);
+  const [{ household, memberBalances }, currency] = await Promise.all([
+    getHouseholdDetail(id, userId),
+    getUserCurrency(userId),
+  ]);
 
   const members = household.members.map((m) => ({ userId: m.userId, name: m.user.name ?? m.user.email }));
 
@@ -30,7 +34,7 @@ export default async function HouseholdDetailPage({ params }: { params: Promise<
               <li key={b.userId} className="flex items-center justify-between text-sm">
                 <span className="text-slate-600">{b.name}</span>
                 <span className={`font-semibold tabular-nums ${b.balance > 0 ? "amount-income" : b.balance < 0 ? "amount-expense" : "text-slate-400"}`}>
-                  {b.balance === 0 ? "settled up" : `${b.balance > 0 ? "+" : "−"}${formatCurrency(Math.abs(b.balance))}`}
+                  {b.balance === 0 ? "settled up" : `${b.balance > 0 ? "+" : "−"}${formatCurrency(Math.abs(b.balance), currency)}`}
                 </span>
               </li>
             ))}
@@ -75,7 +79,7 @@ export default async function HouseholdDetailPage({ params }: { params: Promise<
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="font-semibold tabular-nums text-slate-800 dark:text-slate-100">{formatCurrency(e.amount)}</span>
+                    <span className="font-semibold tabular-nums text-slate-800 dark:text-slate-100">{formatCurrency(e.amount, currency)}</span>
                     <ConfirmDeleteButton
                       action={() => deleteSharedExpense(household.id, e.id)}
                       confirmMessage="Delete this shared expense?"

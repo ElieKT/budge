@@ -22,7 +22,7 @@ type Goal = {
   percentage: number;
 };
 
-export function SavingsGoalCard({ goal }: { goal: Goal }) {
+export function SavingsGoalCard({ goal, currency = "USD" }: { goal: Goal; currency?: string }) {
   const [editing, setEditing] = useState(false);
   const [updatingProgress, setUpdatingProgress] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -41,8 +41,8 @@ export function SavingsGoalCard({ goal }: { goal: Goal }) {
       )}
       <ProgressBar percentage={goal.percentage} status={goal.percentage >= 100 ? "over" : "under"} />
       <div className="mt-2 flex justify-between text-sm text-slate-500">
-        <span>{formatCurrency(goal.currentAmount)} saved</span>
-        <span>{goal.percentage}% of {formatCurrency(goal.targetAmount)}</span>
+        <span>{formatCurrency(goal.currentAmount, currency)} saved</span>
+        <span>{goal.percentage}% of {formatCurrency(goal.targetAmount, currency)}</span>
       </div>
       {goal.notes && <p className="mt-2 text-sm text-slate-500">{goal.notes}</p>}
 

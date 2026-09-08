@@ -16,6 +16,15 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  experimental: {
+    serverActions: {
+      // Default is 1MB, which silently rejects most real photo uploads
+      // before our own avatar-size validation ever runs. The client
+      // resizes images before upload (src/lib/image.ts), so this is
+      // headroom for that resized output, not an invitation to skip it.
+      bodySizeLimit: "4mb",
+    },
+  },
   async headers() {
     return [
       {

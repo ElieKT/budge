@@ -12,7 +12,15 @@ type Row = {
   status: "under" | "warning" | "over";
 };
 
-export function BudgetProgressList({ categories, hasBudget }: { categories: Row[]; hasBudget: boolean }) {
+export function BudgetProgressList({
+  categories,
+  hasBudget,
+  currency = "USD",
+}: {
+  categories: Row[];
+  hasBudget: boolean;
+  currency?: string;
+}) {
   if (!hasBudget || categories.length === 0) {
     return (
       <EmptyState
@@ -34,7 +42,7 @@ export function BudgetProgressList({ categories, hasBudget }: { categories: Row[
           <div className="mb-1.5 flex items-center justify-between text-sm">
             <span className="font-medium text-slate-700">{c.name}</span>
             <span className="flex items-center gap-2 text-slate-500">
-              {formatCurrency(c.spent)} / {formatCurrency(c.limit)}
+              {formatCurrency(c.spent, currency)} / {formatCurrency(c.limit, currency)}
               {c.status === "over" && <Badge tone="expense">Over budget</Badge>}
               {c.status === "warning" && <Badge tone="warning">Almost there</Badge>}
             </span>

@@ -6,7 +6,13 @@ import { formatCurrency } from "@/lib/money";
 const INCOME_COLOR = "#0ca30c";
 const EXPENSE_COLOR = "#d03b3b";
 
-export function MonthlyTrendChart({ data }: { data: { label: string; income: number; expenses: number }[] }) {
+export function MonthlyTrendChart({
+  data,
+  currency = "USD",
+}: {
+  data: { label: string; income: number; expenses: number }[];
+  currency?: string;
+}) {
   return (
     <div className="h-72 w-full">
       <ResponsiveContainer width="100%" height="100%">
@@ -17,10 +23,10 @@ export function MonthlyTrendChart({ data }: { data: { label: string; income: num
             tickLine={false}
             axisLine={false}
             tick={{ fill: "#898781", fontSize: 12 }}
-            tickFormatter={(v: number) => formatCurrency(v).replace(/\.00$/, "")}
+            tickFormatter={(v: number) => formatCurrency(v, currency).replace(/\.00$/, "")}
             width={70}
           />
-          <Tooltip formatter={(value: number) => formatCurrency(value)} cursor={{ fill: "#f9f9f7" }} />
+          <Tooltip formatter={(value: number) => formatCurrency(value, currency)} cursor={{ fill: "#f9f9f7" }} />
           <Legend
             formatter={(value) => <span className="text-sm text-slate-600">{value}</span>}
             iconType="circle"

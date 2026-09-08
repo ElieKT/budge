@@ -7,10 +7,14 @@ import { PageHeader, EmptyState } from "@/components/ui/Misc";
 import { AddAccountModal } from "@/components/accounts/AddAccountModal";
 import { PlaidConnectButton } from "@/components/accounts/PlaidConnectButton";
 import { AccountRow } from "@/components/accounts/AccountRow";
+import { getUserCurrency } from "@/server/data/preferences";
 
 export default async function AccountsPage() {
   const userId = await requireUserId();
-  const { accounts, netWorth } = await getAccountsForUser(userId);
+  const [{ accounts, netWorth }, currency] = await Promise.all([
+    getAccountsForUser(userId),
+    getUserCurrency(userId),
+  ]);
 
   const assets = accounts.filter((a) => !isLiabilityAccountType(a.type));
   const liabilities = accounts.filter((a) => isLiabilityAccountType(a.type));
@@ -26,7 +30,7 @@ export default async function AccountsPage() {
       <div className="card mb-6">
         <p className="text-sm font-medium text-slate-500">Net worth</p>
         <p className={`mt-1 text-3xl font-semibold tabular-nums ${netWorth >= 0 ? "text-slate-900 dark:text-slate-50" : "amount-expense"}`}>
-          {formatCurrency(netWorth)}
+          {formatCurrency(netWorth, currency)}
         </p>
         <p className="mt-1 text-xs text-slate-400">Assets minus what you owe on credit cards and loans.</p>
       </div>
@@ -43,7 +47,7 @@ export default async function AccountsPage() {
           ) : (
             <ul className="divide-y divide-slate-100">
               {assets.map((a) => (
-                <AccountRow key={a.id} account={a} />
+                <AccountRow key={a.id} account={a} currency={currency} />
               ))}
             </ul>
           )}
@@ -56,7 +60,7 @@ export default async function AccountsPage() {
           ) : (
             <ul className="divide-y divide-slate-100">
               {liabilities.map((a) => (
-                <AccountRow key={a.id} account={a} />
+                <AccountRow key={a.id} account={a} currency={currency} />
               ))}
             </ul>
           )}

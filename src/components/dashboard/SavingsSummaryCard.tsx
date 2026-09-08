@@ -9,11 +9,13 @@ export function SavingsSummaryCard({
   totalTarget,
   percentage,
   goals,
+  currency = "USD",
 }: {
   totalSaved: number;
   totalTarget: number;
   percentage: number;
   goals: Goal[];
+  currency?: string;
 }) {
   if (goals.length === 0) {
     return (
@@ -33,8 +35,8 @@ export function SavingsSummaryCard({
     <div>
       <div className="mb-4">
         <div className="flex items-baseline justify-between">
-          <span className="text-2xl font-semibold tabular-nums">{formatCurrency(totalSaved)}</span>
-          <span className="text-sm text-slate-500">of {formatCurrency(totalTarget)} goal</span>
+          <span className="text-2xl font-semibold tabular-nums">{formatCurrency(totalSaved, currency)}</span>
+          <span className="text-sm text-slate-500">of {formatCurrency(totalTarget, currency)} goal</span>
         </div>
         <div className="mt-2">
           <ProgressBar percentage={percentage} status={percentage >= 100 ? "over" : "under"} />

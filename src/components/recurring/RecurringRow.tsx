@@ -28,7 +28,7 @@ type Row = {
   endDate: Date | null;
 };
 
-export function RecurringRow({ rule }: { rule: Row }) {
+export function RecurringRow({ rule, currency = "USD" }: { rule: Row; currency?: string }) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -41,7 +41,7 @@ export function RecurringRow({ rule }: { rule: Row }) {
       <td className="px-4 py-3 text-slate-600">{FREQUENCY_LABELS[rule.frequency]}</td>
       <td className="px-4 py-3 text-slate-600">{rule.nextRunDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</td>
       <td className={`px-4 py-3 text-right font-semibold tabular-nums ${rule.type === "INCOME" ? "amount-income" : "amount-expense"}`}>
-        {rule.type === "INCOME" ? "+" : "−"}{formatCurrency(rule.amount)}
+        {rule.type === "INCOME" ? "+" : "−"}{formatCurrency(rule.amount, currency)}
       </td>
       <td className="px-4 py-3">
         {rule.isActive ? <Badge tone="income">Active</Badge> : <Badge tone="neutral">Paused</Badge>}

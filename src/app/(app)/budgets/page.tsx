@@ -8,6 +8,7 @@ import { BudgetEditorModal } from "@/components/budgets/BudgetEditorModal";
 import { CopyBudgetButton } from "@/components/budgets/CopyBudgetButton";
 import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteButton";
 import { deleteMonthlyBudget } from "@/server/actions/budgets";
+import { getUserCurrency } from "@/server/data/preferences";
 
 export default async function BudgetsPage({
   searchParams,
@@ -20,9 +21,10 @@ export default async function BudgetsPage({
   const year = Number(sp.year) || now.getFullYear();
   const month = Number(sp.month) || now.getMonth() + 1;
 
-  const [expenseCategories, budget] = await Promise.all([
+  const [expenseCategories, budget, currency] = await Promise.all([
     getCategoriesForUser(userId, "EXPENSE"),
     getMonthlyBudget(userId, year, month),
+    getUserCurrency(userId),
   ]);
 
   const categoryOptions = expenseCategories.map((c) => ({ id: c.id, name: c.name }));
@@ -56,7 +58,7 @@ export default async function BudgetsPage({
         <>
           <div className="card mb-4 flex items-center justify-between">
             <span className="text-sm text-slate-500">Total planned</span>
-            <span className="font-semibold tabular-nums">{formatCurrency(budget.totalLimit)}</span>
+            <span className="font-semibold tabular-nums">{formatCurrency(budget.totalLimit, currency)}</span>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {budget.categories.map((c) => (
@@ -71,8 +73,8 @@ export default async function BudgetsPage({
                 </div>
                 <ProgressBar percentage={c.percentage} status={c.status} />
                 <div className="mt-2 flex justify-between text-sm text-slate-500">
-                  <span>{formatCurrency(c.spent)} spent</span>
-                  <span>{c.remaining >= 0 ? `${formatCurrency(c.remaining)} left` : `${formatCurrency(-c.remaining)} over`}</span>
+                  <span>{formatCurrency(c.spent, currency)} spent</span>
+                  <span>{c.remaining >= 0 ? `${formatCurrency(c.remaining, currency)} left` : `${formatCurrency(-c.remaining, currency)} over`}</span>
                 </div>
               </div>
             ))}

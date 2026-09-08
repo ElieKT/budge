@@ -12,6 +12,7 @@ import { SavingsSummaryCard } from "@/components/dashboard/SavingsSummaryCard";
 import { formatCurrency } from "@/lib/money";
 import { savingsProgressPercentage } from "@/lib/calculations";
 import { getAccountsForUser } from "@/server/data/accounts";
+import { getUserCurrency } from "@/server/data/preferences";
 
 export default async function DashboardPage({
   searchParams,
@@ -21,9 +22,10 @@ export default async function DashboardPage({
   const userId = await requireUserId();
   const sp = await searchParams;
   const period = resolvePeriod(sp);
-  const [data, { netWorth, accounts }] = await Promise.all([
+  const [data, { netWorth, accounts }, currency] = await Promise.all([
     getDashboardData(userId, period),
     getAccountsForUser(userId),
+    getUserCurrency(userId),
   ]);
 
   return (
@@ -31,18 +33,20 @@ export default async function DashboardPage({
       <PageHeader title="Dashboard" description="Your financial overview" action={<PeriodSelector />} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <StatCard label="Total balance" cents={data.totalBalance} hint="All-time income minus expenses" />
-        <StatCard label="Income" cents={data.income} tone="income" />
-        <StatCard label="Expenses" cents={data.expenses} tone="expense" />
+        <StatCard label="Total balance" cents={data.totalBalance} currency={currency} hint="All-time income minus expenses" />
+        <StatCard label="Income" cents={data.income} currency={currency} tone="income" />
+        <StatCard label="Expenses" cents={data.expenses} currency={currency} tone="expense" />
         <StatCard
           label="Net cash flow"
           cents={data.net}
+          currency={currency}
           tone={data.net >= 0 ? "income" : "expense"}
           hint="Income minus expenses, this period"
         />
         <StatCard
           label="Net worth"
           cents={netWorth}
+          currency={currency}
           hint={accounts.length === 0 ? "Add accounts to track this" : "Assets minus liabilities"}
         />
       </div>
@@ -50,12 +54,12 @@ export default async function DashboardPage({
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <section className="card lg:col-span-2">
           <h2 className="mb-4 text-base font-semibold">Income vs. expenses — last 6 months</h2>
-          <MonthlyTrendChart data={data.monthlyTrend} />
+          <MonthlyTrendChart data={data.monthlyTrend} currency={currency} />
         </section>
 
         <section className="card">
           <h2 className="mb-4 text-base font-semibold">Spending by category</h2>
-          <CategoryPieChart data={data.spendingByCategory} />
+          <CategoryPieChart data={data.spendingByCategory} currency={currency} />
         </section>
       </div>
 
@@ -64,10 +68,10 @@ export default async function DashboardPage({
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-base font-semibold">This month&apos;s budget</h2>
             <span className="text-sm text-slate-500">
-              Remaining: <span className="font-medium text-slate-700">{formatCurrency(data.remainingBudget)}</span>
+              Remaining: <span className="font-medium text-slate-700">{formatCurrency(data.remainingBudget, currency)}</span>
             </span>
           </div>
-          <BudgetProgressList categories={data.budgetProgress} hasBudget={data.hasBudgetForThisMonth} />
+          <BudgetProgressList categories={data.budgetProgress} hasBudget={data.hasBudgetForThisMonth} currency={currency} />
         </section>
 
         <section className="card">
@@ -76,6 +80,7 @@ export default async function DashboardPage({
             totalSaved={data.savings.totalSaved}
             totalTarget={data.savings.totalTarget}
             percentage={data.savings.percentage}
+            currency={currency}
             goals={data.savings.goals.map((g) => ({
               id: g.id,
               name: g.name,
@@ -89,7 +94,7 @@ export default async function DashboardPage({
 
       <section className="card mt-6">
         <h2 className="mb-2 text-base font-semibold">Recent activity</h2>
-        <RecentTransactionsList transactions={data.recentTransactions} />
+        <RecentTransactionsList transactions={data.recentTransactions} currency={currency} />
       </section>
     </div>
   );

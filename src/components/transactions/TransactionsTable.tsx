@@ -17,7 +17,15 @@ type Row = {
   category: { id: string; name: string; color: string } | null;
 };
 
-export function TransactionsTable({ transactions, categories }: { transactions: Row[]; categories: CategoryOption[] }) {
+export function TransactionsTable({
+  transactions,
+  categories,
+  currency = "USD",
+}: {
+  transactions: Row[];
+  categories: CategoryOption[];
+  currency?: string;
+}) {
   if (transactions.length === 0) {
     return <EmptyState title="No transactions found" description="Try adjusting your filters, or add a new transaction." />;
   }
@@ -56,7 +64,7 @@ export function TransactionsTable({ transactions, categories }: { transactions: 
               </td>
               <td className={`whitespace-nowrap px-4 py-3 text-right font-semibold tabular-nums ${t.type === "INCOME" ? "amount-income" : "amount-expense"}`}>
                 {t.type === "INCOME" ? "+" : "−"}
-                {formatCurrency(t.amount)}
+                {formatCurrency(t.amount, currency)}
               </td>
               <td className="whitespace-nowrap px-4 py-3 text-right">
                 <div className="flex items-center justify-end gap-3">

@@ -12,7 +12,7 @@ type Row = {
   category: { name: string; color: string } | null;
 };
 
-export function RecentTransactionsList({ transactions }: { transactions: Row[] }) {
+export function RecentTransactionsList({ transactions, currency = "USD" }: { transactions: Row[]; currency?: string }) {
   if (transactions.length === 0) {
     return (
       <EmptyState
@@ -42,7 +42,7 @@ export function RecentTransactionsList({ transactions }: { transactions: Row[] }
           </div>
           <span className={`shrink-0 text-sm font-semibold tabular-nums ${t.type === "INCOME" ? "amount-income" : "amount-expense"}`}>
             {t.type === "INCOME" ? "+" : "−"}
-            {formatCurrency(t.amount)}
+            {formatCurrency(t.amount, currency)}
           </span>
         </li>
       ))}

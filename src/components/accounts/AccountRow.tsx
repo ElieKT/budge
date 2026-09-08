@@ -27,7 +27,7 @@ type Account = {
   currentBalance: number;
 };
 
-export function AccountRow({ account }: { account: Account }) {
+export function AccountRow({ account, currency = "USD" }: { account: Account; currency?: string }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState((account.currentBalance / 100).toFixed(2));
   const [pending, startTransition] = useTransition();
@@ -74,7 +74,7 @@ export function AccountRow({ account }: { account: Account }) {
           </>
         ) : (
           <>
-            <span className="font-semibold tabular-nums text-slate-800 dark:text-slate-100">{formatCurrency(account.currentBalance)}</span>
+            <span className="font-semibold tabular-nums text-slate-800 dark:text-slate-100">{formatCurrency(account.currentBalance, currency)}</span>
             {account.source === "MANUAL" && (
               <button type="button" onClick={() => setEditing(true)} className="text-sm font-medium text-brand-600 hover:underline">
                 Edit

@@ -14,7 +14,7 @@ type Holding = {
   account: { name: string };
 };
 
-export function HoldingsTable({ holdings }: { holdings: Holding[] }) {
+export function HoldingsTable({ holdings, currency = "USD" }: { holdings: Holding[]; currency?: string }) {
   if (holdings.length === 0) {
     return <EmptyState title="No holdings yet" description="Add a stock, fund, or crypto position to track its value here." />;
   }
@@ -44,10 +44,10 @@ export function HoldingsTable({ holdings }: { holdings: Holding[] }) {
                 <td className="px-4 py-3 text-slate-600">{h.account.name}</td>
                 <td className="px-4 py-3 text-right tabular-nums text-slate-600">{String(h.quantity)}</td>
                 <td className="px-4 py-3 text-right font-semibold tabular-nums text-slate-800 dark:text-slate-100">
-                  {formatCurrency(h.currentValue)}
+                  {formatCurrency(h.currentValue, currency)}
                 </td>
                 <td className={`px-4 py-3 text-right tabular-nums ${gain == null ? "text-slate-400" : gain >= 0 ? "amount-income" : "amount-expense"}`}>
-                  {gain == null ? "—" : `${gain >= 0 ? "+" : "−"}${formatCurrency(Math.abs(gain))}`}
+                  {gain == null ? "—" : `${gain >= 0 ? "+" : "−"}${formatCurrency(Math.abs(gain), currency)}`}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <ConfirmDeleteButton action={() => deleteInvestmentHolding(h.id)} confirmMessage="Remove this holding?" />

@@ -7,8 +7,10 @@ import { EmptyState } from "@/components/ui/Misc";
 
 export function CategoryPieChart({
   data,
+  currency = "USD",
 }: {
   data: { categoryId: string; name: string; amount: number }[];
+  currency?: string;
 }) {
   if (data.length === 0) {
     return <EmptyState title="No spending yet" description="Add an expense to see your spending by category." />;
@@ -35,7 +37,7 @@ export function CategoryPieChart({
                 <Cell key={entry.id} fill={entry.color} />
               ))}
             </Pie>
-            <Tooltip formatter={(value: number) => formatCurrency(value)} />
+            <Tooltip formatter={(value: number) => formatCurrency(value, currency)} />
           </PieChart>
         </ResponsiveContainer>
       </div>
@@ -46,7 +48,7 @@ export function CategoryPieChart({
               <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: entry.color }} />
               <span className="truncate text-slate-600">{entry.name}</span>
             </span>
-            <span className="shrink-0 font-medium tabular-nums text-slate-800 dark:text-slate-100">{formatCurrency(entry.amount)}</span>
+            <span className="shrink-0 font-medium tabular-nums text-slate-800 dark:text-slate-100">{formatCurrency(entry.amount, currency)}</span>
           </li>
         ))}
       </ul>

@@ -4,16 +4,18 @@ import { getCategoriesForUser } from "@/server/data/categories";
 import { PageHeader, EmptyState } from "@/components/ui/Misc";
 import { AddRecurringButton } from "@/components/recurring/AddRecurringButton";
 import { RecurringRow } from "@/components/recurring/RecurringRow";
+import { getUserCurrency } from "@/server/data/preferences";
 
 export default async function RecurringPage() {
   const userId = await requireUserId();
-  const [rules, categories] = await Promise.all([
+  const [rules, categories, currency] = await Promise.all([
     prisma.recurringTransaction.findMany({
       where: { userId },
       include: { category: true },
       orderBy: [{ isActive: "desc" }, { nextRunDate: "asc" }],
     }),
     getCategoriesForUser(userId),
+    getUserCurrency(userId),
   ]);
 
   return (
@@ -49,7 +51,7 @@ export default async function RecurringPage() {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {rules.map((r) => (
-                <RecurringRow key={r.id} rule={r} />
+                <RecurringRow key={r.id} rule={r} currency={currency} />
               ))}
             </tbody>
           </table>

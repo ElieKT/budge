@@ -1,8 +1,11 @@
 import { z } from "zod";
 import { isValidHexColor } from "@/lib/accentColors";
 
-export const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
-export const MAX_AVATAR_BYTES = 500 * 1024; // 500KB — stored as a data URL, so keep it small
+export const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"] as const;
+// The client (src/lib/image.ts) resizes/re-encodes to a small JPEG before
+// upload, so this only needs to be generous enough to cover that resized
+// output plus the rare fallback of an unresizeable original.
+export const MAX_AVATAR_BYTES = 3 * 1024 * 1024; // 3MB
 
 export const themeSchema = z.enum(["LIGHT", "DARK", "SYSTEM"]);
 export const localeSchema = z.enum(["EN", "FR", "ES"]);

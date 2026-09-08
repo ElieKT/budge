@@ -1,7 +1,11 @@
 import { z } from "zod";
+import { isSupportedCurrency } from "@/lib/currencies";
 
 export const onboardingSchema = z.object({
-  currency: z.enum(["USD"]).default("USD"),
+  currency: z
+    .string()
+    .refine(isSupportedCurrency, "Choose a supported currency")
+    .default("USD"),
   monthlyIncomeEstimate: z
     .string()
     .trim()

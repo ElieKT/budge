@@ -4,10 +4,11 @@ import { PageHeader, EmptyState } from "@/components/ui/Misc";
 import { AddSavingsGoalButton } from "@/components/savings/AddSavingsGoalButton";
 import { StarterGoalsButton } from "@/components/savings/StarterGoalsButton";
 import { SavingsGoalCard } from "@/components/savings/SavingsGoalCard";
+import { getUserCurrency } from "@/server/data/preferences";
 
 export default async function SavingsGoalsPage() {
   const userId = await requireUserId();
-  const goals = await getSavingsGoals(userId);
+  const [goals, currency] = await Promise.all([getSavingsGoals(userId), getUserCurrency(userId)]);
 
   return (
     <div>
@@ -26,7 +27,7 @@ export default async function SavingsGoalsPage() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {goals.map((g) => (
-            <SavingsGoalCard key={g.id} goal={g} />
+            <SavingsGoalCard key={g.id} goal={g} currency={currency} />
           ))}
         </div>
       )}
