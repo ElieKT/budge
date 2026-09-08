@@ -22,7 +22,7 @@ export default function PrivacyPage() {
       <p>Every account&apos;s financial data is scoped to that account only. There is no unrestricted administrative access to user financial records.</p>
 
       <h2 className="text-base font-semibold text-slate-900 dark:text-slate-50">Third parties</h2>
-      <p>We use Plaid (bank/card connections, optional), Resend (password-reset email, optional), and Frankfurter/ECB (currency conversion rates — no personal data sent). We do not sell your data.</p>
+      <p>We use Plaid (bank/card connections, optional), Resend (password-reset email, optional), and ExchangeRate-API (currency conversion rates — no personal data sent). We do not sell your data.</p>
 
       <h2 className="text-base font-semibold text-slate-900 dark:text-slate-50">Your choices</h2>
       <p>You can export nothing automatically yet, but you can delete your account at any time from Settings, which permanently removes your data.</p>

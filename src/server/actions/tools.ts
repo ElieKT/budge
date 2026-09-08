@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { errorResult, okResult, zodErrorResult, type ActionResult } from "@/server/action-result";
-import { getExchangeRatesBoard, type ForexRate } from "@/lib/forex";
+import { getExchangeRate, getExchangeRatesBoard, type ForexRate } from "@/lib/forex";
 
 const convertSchema = z.object({
   amount: z.string().trim().regex(/^\d+(\.\d{1,2})?$/, "Enter a valid amount"),
@@ -11,10 +11,10 @@ const convertSchema = z.object({
 });
 
 /**
- * Live currency conversion via Frankfurter (https://frankfurter.dev) — a
- * free, keyless, open-source exchange-rate API backed by European Central
- * Bank reference rates. No API key or account is required, and this app
- * sends it nothing but the two currency codes and an amount (no user data).
+ * Live currency conversion — see src/lib/forex.ts for the provider and why
+ * it was chosen (broad coverage, including African currencies, over the
+ * ECB-only alternative). No API key or account is required, and this app
+ * sends it nothing but the two currency codes (no user data).
  */
 export async function convertCurrency(
   _prev: unknown,
@@ -31,17 +31,10 @@ export async function convertCurrency(
   if (from === to) return okResult({ result: Number(amount), rate: 1, date: "" });
 
   try {
-    const res = await fetch(
-      `https://api.frankfurter.dev/v1/latest?base=${encodeURIComponent(from)}&symbols=${encodeURIComponent(to)}`,
-      { cache: "no-store" },
-    );
-    if (!res.ok) return errorResult("Exchange rate service is unavailable right now.");
-    const data = (await res.json()) as { rates: Record<string, number>; date: string };
-    const rate = data.rates[to];
-    if (!rate) return errorResult(`No rate available for ${from} → ${to}.`);
-    return okResult({ result: Math.round(Number(amount) * rate * 100) / 100, rate, date: data.date });
-  } catch {
-    return errorResult("Couldn't reach the exchange rate service. Try again in a moment.");
+    const { rate, date } = await getExchangeRate(from, to);
+    return okResult({ result: Math.round(Number(amount) * rate * 100) / 100, rate, date });
+  } catch (error) {
+    return errorResult(error instanceof Error ? error.message : "Couldn't reach the exchange rate service.");
   }
 }
 
@@ -51,7 +44,7 @@ export async function fetchExchangeRateBoard(
   try {
     const board = await getExchangeRatesBoard(base);
     return okResult(board);
-  } catch {
-    return errorResult("Couldn't reach the exchange rate service. Try again in a moment.");
+  } catch (error) {
+    return errorResult(error instanceof Error ? error.message : "Couldn't reach the exchange rate service.");
   }
 }

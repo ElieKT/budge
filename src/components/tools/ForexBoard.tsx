@@ -2,10 +2,14 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { fetchExchangeRateBoard } from "@/server/actions/tools";
-import { FRANKFURTER_CURRENCIES, type ForexRate } from "@/lib/forex";
+import type { ForexRate } from "@/lib/forex";
+import { CURRENCIES } from "@/lib/currencies";
 import { FormBanner } from "@/components/ui/Field";
 
-const BASE_OPTIONS = Array.from(FRANKFURTER_CURRENCIES).sort();
+// The provider tracks 160+ currencies — filter its response down to the
+// set Budge actually supports for display elsewhere, so this board stays
+// directly relevant instead of dumping every currency in the world.
+const SUPPORTED_CODES = new Set(CURRENCIES.map((c) => c.code));
 
 export function ForexBoard() {
   const [base, setBase] = useState("USD");
@@ -22,7 +26,7 @@ export function ForexBoard() {
         setError(result.error);
         return;
       }
-      setRates(result.data.rates);
+      setRates(result.data.rates.filter((r) => SUPPORTED_CODES.has(r.code)));
       setDate(result.data.date);
     });
   }, [base]);
@@ -37,8 +41,8 @@ export function ForexBoard() {
             onChange={(e) => setBase(e.target.value)}
             className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm shadow-sm dark:border-slate-700 dark:bg-slate-800"
           >
-            {BASE_OPTIONS.map((c) => (
-              <option key={c} value={c}>{c}</option>
+            {CURRENCIES.map((c) => (
+              <option key={c.code} value={c.code}>{c.code}</option>
             ))}
           </select>
         </label>
@@ -61,10 +65,8 @@ export function ForexBoard() {
       )}
 
       <p className="mt-4 text-xs text-slate-400">
-        Live rates from Frankfurter (ECB reference rates). Covers major world currencies — a few of
-        the currencies Budge supports for display formatting (e.g. West/Central African francs,
-        several Central American currencies) aren&apos;t tracked by this rate source and won&apos;t
-        appear here.
+        Live rates covering every currency Budge supports — including West/Central African francs
+        and other African currencies, not just South Africa&apos;s rand. Rates refresh roughly daily.
       </p>
     </div>
   );
