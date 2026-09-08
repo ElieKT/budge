@@ -13,6 +13,7 @@ export function AppShell({
   navItems,
   mobileNavItems,
   signOutLabel = "Sign out",
+  isAdmin = false,
   children,
 }: {
   userName: string;
@@ -20,6 +21,7 @@ export function AppShell({
   navItems: NavItem[];
   mobileNavItems: NavItem[];
   signOutLabel?: string;
+  isAdmin?: boolean;
   children: React.ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -45,7 +47,7 @@ export function AppShell({
           ))}
         </nav>
         <div className="border-t border-slate-200 p-3 dark:border-slate-800">
-          <AccountMenu userName={userName} userImage={userImage} signOutLabel={signOutLabel} />
+          <AccountMenu userName={userName} userImage={userImage} signOutLabel={signOutLabel} isAdmin={isAdmin} />
         </div>
       </aside>
 
@@ -96,6 +98,7 @@ export function AppShell({
               userName={userName}
               userImage={userImage}
               signOutLabel={signOutLabel}
+              isAdmin={isAdmin}
               onNavigate={() => setMobileMenuOpen(false)}
             />
           </div>

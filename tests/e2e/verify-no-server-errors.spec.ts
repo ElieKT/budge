@@ -1,4 +1,7 @@
 import { expect, test } from "@playwright/test";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 /**
  * One-off verification script (not part of the permanent suite) written to
@@ -215,5 +218,36 @@ test("no page throws a server-side exception through the main flows", async ({ p
     await assertNoServerError(page, path);
   }
 
+  // Admin panel — a non-admin is bounced away by middleware...
+  await page.goto("/admin");
+  await page.waitForURL(/\/dashboard$/, { timeout: 15000 });
+  await assertNoServerError(page, "admin (redirected, non-admin)");
+
+  // ...promote this user directly via Prisma (there's no UI path to become
+  // the first admin). The session is a JWT that only reads role at sign-in,
+  // so this alone won't take effect — sign out and back in to pick it up,
+  // exactly like a real promoted user would need to.
+  await prisma.user.update({ where: { email }, data: { role: "ADMIN" } });
+  await page.getByRole("button", { name: /Verify Bot/ }).click();
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.waitForURL(/\/(login)?$/, { timeout: 15000 });
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill("GoodPassword1");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.waitForURL(/dashboard/, { timeout: 15000 });
+  await expect(page.getByText("Admin panel")).not.toBeVisible(); // account menu closed
+  await page.getByRole("button", { name: /Verify Bot/ }).click();
+  await page.getByText("Admin panel").click();
+  await page.waitForURL(/\/admin$/, { timeout: 15000 });
+  await assertNoServerError(page, "admin overview");
+  await expect(page.getByText("Total users")).toBeVisible();
+
+  await page.goto("/admin/users");
+  await assertNoServerError(page, "admin users roster");
+  await expect(page.getByText(email)).toBeVisible();
+  await expect(page.getByText("You")).toBeVisible(); // self row has no role-toggle button
+
   expect(pageErrors, `uncaught client-side errors: ${pageErrors.join("; ")}`).toEqual([]);
+  await prisma.$disconnect();
 });

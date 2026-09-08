@@ -32,6 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       navItems={translateNavItems(locale, NAV_ITEMS)}
       mobileNavItems={translateNavItems(locale, MOBILE_NAV_ITEMS)}
       signOutLabel={t(locale, "sign_out")}
+      isAdmin={session.user.role === "ADMIN"}
     >
       {children}
     </AppShell>

@@ -9,11 +9,13 @@ export function AccountMenu({
   userName,
   userImage,
   signOutLabel = "Sign out",
+  isAdmin = false,
   onNavigate,
 }: {
   userName: string;
   userImage?: string | null;
   signOutLabel?: string;
+  isAdmin?: boolean;
   onNavigate?: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -62,6 +64,18 @@ export function AccountMenu({
           >
             Help &amp; support
           </Link>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              onClick={() => {
+                setOpen(false);
+                onNavigate?.();
+              }}
+              className="block px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-700"
+            >
+              Admin panel
+            </Link>
+          )}
           <hr className="my-1 border-slate-100 dark:border-slate-700" />
           <form action={logoutAction}>
             <button

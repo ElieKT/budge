@@ -31,6 +31,14 @@ export default auth((req) => {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Signed in but not an admin — bounce away from /admin entirely rather
+  // than letting them hit a page that will just redirect/throw itself.
+  // (This is a routing convenience, not the authorization boundary itself —
+  // requireAdmin() in the admin layout and every admin action re-checks.)
+  if (isLoggedIn && pathname.startsWith("/admin") && req.auth?.user?.role !== "ADMIN") {
+    return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
+  }
+
   return NextResponse.next();
 });
 
