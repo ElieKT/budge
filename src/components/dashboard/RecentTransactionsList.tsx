@@ -32,7 +32,7 @@ export function RecentTransactionsList({ transactions }: { transactions: Row[] }
       {transactions.map((t) => (
         <li key={t.id} className="flex items-center justify-between gap-3 py-3">
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-slate-800">
+            <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-100">
               {t.merchant || t.description || t.category?.name || "Transaction"}
             </p>
             <p className="text-xs text-slate-400">

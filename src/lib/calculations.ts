@@ -79,3 +79,55 @@ export function savingsProgressPercentage(current: number, target: number): numb
 export function remainingOverallBudget(totalPlanned: number, totalSpent: number): number {
   return totalPlanned - totalSpent;
 }
+
+// ---------------------------------------------------------------------------
+// Net worth (financial accounts + investment holdings)
+// ---------------------------------------------------------------------------
+
+export type LiabilityAccountType = "CREDIT_CARD" | "LOAN";
+const LIABILITY_TYPES: ReadonlySet<string> = new Set<LiabilityAccountType>(["CREDIT_CARD", "LOAN"]);
+
+export type CalcAccount = { type: string; currentBalance: number };
+
+/** True for account types that represent money owed, not money held. */
+export function isLiabilityAccountType(type: string): boolean {
+  return LIABILITY_TYPES.has(type);
+}
+
+/**
+ * Net worth = sum of asset account balances - sum of liability account
+ * balances. Liability balances (credit cards, loans) are stored positive
+ * (the amount owed), so they're subtracted rather than added.
+ */
+export function netWorth(accounts: CalcAccount[]): number {
+  return accounts.reduce((sum, a) => sum + (isLiabilityAccountType(a.type) ? -a.currentBalance : a.currentBalance), 0);
+}
+
+// ---------------------------------------------------------------------------
+// Household shared-expense ledger
+// ---------------------------------------------------------------------------
+
+export type CalcSharedExpense = {
+  paidByUserId: string;
+  splits: { userId: string; shareAmount: number }[];
+};
+
+/**
+ * Net balance per user across a household's shared expenses: positive means
+ * the household owes that user money (they paid more than their share),
+ * negative means that user owes the household. Purely a ledger computation
+ * — no money ever moves as a result of this number.
+ */
+export function householdNetBalances(expenses: CalcSharedExpense[]): Map<string, number> {
+  const balances = new Map<string, number>();
+  const add = (userId: string, delta: number) => balances.set(userId, (balances.get(userId) ?? 0) + delta);
+
+  for (const expense of expenses) {
+    const total = expense.splits.reduce((sum, s) => sum + s.shareAmount, 0);
+    add(expense.paidByUserId, total); // the payer is owed the full amount...
+    for (const split of expense.splits) {
+      add(split.userId, -split.shareAmount); // ...minus what they themselves owe
+    }
+  }
+  return balances;
+}

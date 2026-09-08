@@ -11,6 +11,7 @@ import { BudgetProgressList } from "@/components/dashboard/BudgetProgressList";
 import { SavingsSummaryCard } from "@/components/dashboard/SavingsSummaryCard";
 import { formatCurrency } from "@/lib/money";
 import { savingsProgressPercentage } from "@/lib/calculations";
+import { getAccountsForUser } from "@/server/data/accounts";
 
 export default async function DashboardPage({
   searchParams,
@@ -20,13 +21,16 @@ export default async function DashboardPage({
   const userId = await requireUserId();
   const sp = await searchParams;
   const period = resolvePeriod(sp);
-  const data = await getDashboardData(userId, period);
+  const [data, { netWorth, accounts }] = await Promise.all([
+    getDashboardData(userId, period),
+    getAccountsForUser(userId),
+  ]);
 
   return (
     <div>
       <PageHeader title="Dashboard" description="Your financial overview" action={<PeriodSelector />} />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard label="Total balance" cents={data.totalBalance} hint="All-time income minus expenses" />
         <StatCard label="Income" cents={data.income} tone="income" />
         <StatCard label="Expenses" cents={data.expenses} tone="expense" />
@@ -35,6 +39,11 @@ export default async function DashboardPage({
           cents={data.net}
           tone={data.net >= 0 ? "income" : "expense"}
           hint="Income minus expenses, this period"
+        />
+        <StatCard
+          label="Net worth"
+          cents={netWorth}
+          hint={accounts.length === 0 ? "Add accounts to track this" : "Assets minus liabilities"}
         />
       </div>
 

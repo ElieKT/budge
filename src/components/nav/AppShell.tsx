@@ -1,59 +1,83 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { logoutAction } from "@/server/actions/auth";
-import { MOBILE_NAV_ITEMS, NAV_ITEMS } from "./nav-items";
 import { NavLink } from "./NavLink";
+
+type NavItem = { href: string; label: string };
 
 export function AppShell({
   userName,
+  userImage,
+  navItems,
+  mobileNavItems,
+  signOutLabel = "Sign out",
   children,
 }: {
   userName: string;
+  userImage?: string | null;
+  navItems: NavItem[];
+  mobileNavItems: NavItem[];
+  signOutLabel?: string;
   children: React.ReactNode;
 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const avatar = userImage ? (
+    <Image src={userImage} alt="" width={28} height={28} className="h-7 w-7 shrink-0 rounded-full object-cover" unoptimized />
+  ) : (
+    <span
+      className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+      style={{ backgroundColor: "var(--accent)" }}
+    >
+      {userName.charAt(0).toUpperCase()}
+    </span>
+  );
+
   return (
-    <div className="min-h-dvh bg-muted">
+    <div className="min-h-dvh bg-muted dark:bg-slate-950">
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-slate-200 bg-white lg:flex">
+      <aside className="fixed inset-y-0 left-0 hidden w-60 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 lg:flex">
         <div className="flex h-16 items-center gap-2 px-5">
-          <span className="text-lg font-semibold text-brand-700">💰 Budge</span>
+          <span className="text-lg font-semibold" style={{ color: "var(--accent)" }}>💰 Budge</span>
         </div>
         <nav className="flex-1 space-y-1 px-3">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <NavLink
               key={item.href}
               href={item.href}
               label={item.label}
               className="block rounded-lg px-3 py-2 text-sm font-medium"
-              activeClassName="bg-brand-50 text-brand-700"
-              inactiveClassName="text-slate-600 hover:bg-slate-50"
+              activeClassName="bg-slate-100 font-semibold dark:bg-slate-800"
+              inactiveClassName="text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
             />
           ))}
         </nav>
-        <div className="border-t border-slate-200 p-3">
-          <p className="truncate px-3 text-sm text-slate-500">{userName}</p>
+        <div className="border-t border-slate-200 p-3 dark:border-slate-800">
+          <div className="flex items-center gap-2 px-3">
+            {avatar}
+            <p className="truncate text-sm text-slate-500 dark:text-slate-400">{userName}</p>
+          </div>
           <form action={logoutAction}>
             <button
               type="submit"
-              className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-600 hover:bg-slate-50"
+              className="mt-1 w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
             >
-              Sign out
+              {signOutLabel}
             </button>
           </form>
         </div>
       </aside>
 
       {/* Mobile top bar */}
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 lg:hidden">
-        <span className="text-base font-semibold text-brand-700">💰 Budge</span>
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-slate-200 bg-white px-4 dark:border-slate-800 dark:bg-slate-900 lg:hidden">
+        <span className="text-base font-semibold" style={{ color: "var(--accent)" }}>💰 Budge</span>
         <button
           type="button"
           aria-label="Open menu"
           onClick={() => setMobileMenuOpen(true)}
-          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
+          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
         >
           ☰
         </button>
@@ -62,37 +86,40 @@ export function AppShell({
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-40 flex lg:hidden">
           <div className="absolute inset-0 bg-slate-900/40" onClick={() => setMobileMenuOpen(false)} />
-          <div className="relative ml-auto flex h-full w-72 flex-col bg-white p-4 shadow-xl">
+          <div className="relative ml-auto flex h-full w-72 flex-col bg-white p-4 shadow-xl dark:bg-slate-900">
             <div className="mb-4 flex items-center justify-between">
-              <span className="font-semibold text-brand-700">Menu</span>
+              <span className="font-semibold" style={{ color: "var(--accent)" }}>Menu</span>
               <button
                 aria-label="Close menu"
                 onClick={() => setMobileMenuOpen(false)}
-                className="rounded-full p-1 text-slate-400 hover:bg-slate-100"
+                className="rounded-full p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 ✕
               </button>
             </div>
             <nav className="flex-1 space-y-1">
-              {NAV_ITEMS.map((item) => (
+              {navItems.map((item) => (
                 <NavLink
                   key={item.href}
                   href={item.href}
                   label={item.label}
                   onNavigate={() => setMobileMenuOpen(false)}
                   className="block rounded-lg px-3 py-2 text-sm font-medium"
-                  activeClassName="bg-brand-50 text-brand-700"
-                  inactiveClassName="text-slate-600 hover:bg-slate-50"
+                  activeClassName="bg-slate-100 font-semibold dark:bg-slate-800"
+                  inactiveClassName="text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
                 />
               ))}
             </nav>
-            <p className="truncate px-1 py-2 text-sm text-slate-500">{userName}</p>
+            <div className="flex items-center gap-2 px-1 py-2">
+              {avatar}
+              <p className="truncate text-sm text-slate-500 dark:text-slate-400">{userName}</p>
+            </div>
             <form action={logoutAction}>
               <button
                 type="submit"
-                className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-600 hover:bg-slate-50"
+                className="w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800"
               >
-                Sign out
+                {signOutLabel}
               </button>
             </form>
           </div>
@@ -104,15 +131,15 @@ export function AppShell({
       </main>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-slate-200 bg-white lg:hidden">
-        {MOBILE_NAV_ITEMS.map((item) => (
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 lg:hidden">
+        {mobileNavItems.map((item) => (
           <NavLink
             key={item.href}
             href={item.href}
             label={item.label}
             className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium"
-            activeClassName="text-brand-700"
-            inactiveClassName="text-slate-500"
+            activeClassName=""
+            inactiveClassName="text-slate-500 dark:text-slate-400"
           />
         ))}
       </nav>

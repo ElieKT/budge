@@ -5,17 +5,33 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    /* User-selected accent (see src/lib/accentColors.ts) — set inline on
+       <html> per-request from UserPreference.accentColor. Falls back to
+       the default brand green for logged-out pages. */
+    --accent: #159d63;
   }
   body {
-    @apply bg-muted text-slate-900 antialiased;
+    @apply bg-muted text-slate-900 antialiased transition-colors;
+  }
+  .dark body {
+    @apply bg-slate-950 text-slate-100;
   }
   h1,
   h2,
   h3 {
     @apply font-semibold tracking-tight text-slate-900;
   }
+  .dark h1,
+  .dark h2,
+  .dark h3 {
+    @apply text-slate-50;
+  }
   :focus-visible {
-    @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-white;
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent), 0 0 0 4px white;
+  }
+  .dark :focus-visible {
+    box-shadow: 0 0 0 2px var(--accent), 0 0 0 4px #020617;
   }
 }
 
@@ -23,8 +39,14 @@
   .card {
     @apply rounded-xl border border-slate-200 bg-surface p-5 shadow-card;
   }
+  .dark .card {
+    @apply border-slate-800 bg-slate-900;
+  }
   .label {
     @apply mb-1.5 block text-sm font-medium text-slate-700;
+  }
+  .dark .label {
+    @apply text-slate-300;
   }
   .field-error {
     @apply mt-1 text-sm text-expense;

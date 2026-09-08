@@ -46,7 +46,7 @@ export function CategoryPieChart({
               <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: entry.color }} />
               <span className="truncate text-slate-600">{entry.name}</span>
             </span>
-            <span className="shrink-0 font-medium tabular-nums text-slate-800">{formatCurrency(entry.amount)}</span>
+            <span className="shrink-0 font-medium tabular-nums text-slate-800 dark:text-slate-100">{formatCurrency(entry.amount)}</span>
           </li>
         ))}
       </ul>

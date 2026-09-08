@@ -31,7 +31,7 @@ export function SavingsGoalCard({ goal }: { goal: Goal }) {
   return (
     <div className="card">
       <div className="mb-1.5 flex items-start justify-between">
-        <h3 className="font-semibold text-slate-800">{goal.name}</h3>
+        <h3 className="font-semibold text-slate-800 dark:text-slate-100">{goal.name}</h3>
         {goal.isCompleted && <Badge tone="income">Complete 🎉</Badge>}
       </div>
       {goal.targetDate && (

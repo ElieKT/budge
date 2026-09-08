@@ -4,6 +4,9 @@ import { PageHeader } from "@/components/ui/Misc";
 import { ProfileForm } from "@/components/settings/ProfileForm";
 import { ChangePasswordForm } from "@/components/settings/ChangePasswordForm";
 import { PreferencesForm } from "@/components/settings/PreferencesForm";
+import { AvatarUploadForm } from "@/components/settings/AvatarUploadForm";
+import { AppearanceForm } from "@/components/settings/AppearanceForm";
+import { LocaleForm } from "@/components/settings/LocaleForm";
 import { DeleteAccountSection } from "@/components/settings/DeleteAccountSection";
 
 export default async function SettingsPage() {
@@ -20,7 +23,20 @@ export default async function SettingsPage() {
       <div className="space-y-6">
         <section className="card">
           <h2 className="mb-4 text-base font-semibold">Profile</h2>
+          <div className="mb-6">
+            <AvatarUploadForm name={user.name ?? user.email} image={user.image} />
+          </div>
           <ProfileForm name={user.name ?? ""} email={user.email} />
+        </section>
+
+        <section className="card">
+          <h2 className="mb-4 text-base font-semibold">Appearance</h2>
+          <AppearanceForm theme={user.preference?.theme ?? "SYSTEM"} accentColor={user.preference?.accentColor ?? "#159d63"} />
+        </section>
+
+        <section className="card">
+          <h2 className="mb-4 text-base font-semibold">Language</h2>
+          <LocaleForm locale={user.preference?.locale ?? "EN"} />
         </section>
 
         <section className="card">

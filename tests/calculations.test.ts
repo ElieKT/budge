@@ -3,7 +3,10 @@ import {
   budgetStatus,
   budgetUsedPercentage,
   categorySpend,
+  householdNetBalances,
+  isLiabilityAccountType,
   netCashFlow,
+  netWorth,
   remainingBudget,
   savingsProgressPercentage,
   spendByCategory,
@@ -111,5 +114,60 @@ describe("savingsProgressPercentage", () => {
 
   it("clamps a negative current amount's percentage at 0", () => {
     expect(savingsProgressPercentage(-500, 10000)).toBe(0);
+  });
+});
+
+describe("isLiabilityAccountType / netWorth", () => {
+  it("classifies credit cards and loans as liabilities, everything else as assets", () => {
+    expect(isLiabilityAccountType("CREDIT_CARD")).toBe(true);
+    expect(isLiabilityAccountType("LOAN")).toBe(true);
+    expect(isLiabilityAccountType("CHECKING")).toBe(false);
+    expect(isLiabilityAccountType("INVESTMENT")).toBe(false);
+    expect(isLiabilityAccountType("CRYPTO")).toBe(false);
+  });
+
+  it("subtracts liability balances rather than adding them", () => {
+    const accounts = [
+      { type: "CHECKING", currentBalance: 500_00 },
+      { type: "SAVINGS", currentBalance: 1000_00 },
+      { type: "CREDIT_CARD", currentBalance: 200_00 }, // amount owed, stored positive
+      { type: "LOAN", currentBalance: 5000_00 },
+    ];
+    expect(netWorth(accounts)).toBe(500_00 + 1000_00 - 200_00 - 5000_00);
+  });
+
+  it("returns 0 for no accounts", () => {
+    expect(netWorth([])).toBe(0);
+  });
+
+  it("can be negative when liabilities exceed assets", () => {
+    const accounts = [
+      { type: "CHECKING", currentBalance: 100_00 },
+      { type: "CREDIT_CARD", currentBalance: 5000_00 },
+    ];
+    expect(netWorth(accounts)).toBeLessThan(0);
+  });
+});
+
+describe("householdNetBalances", () => {
+  it("computes zero net balance for a single evenly-split expense between two people", () => {
+    const balances = householdNetBalances([
+      { paidByUserId: "alice", splits: [{ userId: "alice", shareAmount: 50_00 }, { userId: "bob", shareAmount: 50_00 }] },
+    ]);
+    expect(balances.get("alice")).toBe(50_00); // paid 100, owes 50 -> net +50 (owed to alice)
+    expect(balances.get("bob")).toBe(-50_00); // owes 50 -> net -50
+  });
+
+  it("nets multiple expenses across a household to a single balance per person", () => {
+    const balances = householdNetBalances([
+      { paidByUserId: "alice", splits: [{ userId: "alice", shareAmount: 30_00 }, { userId: "bob", shareAmount: 30_00 }] },
+      { paidByUserId: "bob", splits: [{ userId: "alice", shareAmount: 20_00 }, { userId: "bob", shareAmount: 20_00 }] },
+    ]);
+    const total = Array.from(balances.values()).reduce((a, b) => a + b, 0);
+    expect(total).toBe(0); // a closed ledger always sums to zero
+  });
+
+  it("returns an empty map for no expenses", () => {
+    expect(householdNetBalances([]).size).toBe(0);
   });
 });

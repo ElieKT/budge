@@ -40,7 +40,7 @@ export default function LandingPage() {
             { t: "Goals you can see", d: "Track savings goals with real progress percentages, not guesswork." },
           ].map((f) => (
             <div key={f.t} className="card">
-              <dt className="font-medium text-slate-900">{f.t}</dt>
+              <dt className="font-medium text-slate-900 dark:text-slate-50">{f.t}</dt>
               <dd className="mt-1 text-sm text-slate-500">{f.d}</dd>
             </div>
           ))}

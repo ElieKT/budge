@@ -26,6 +26,7 @@ export function NavLink({
       href={href}
       onClick={onNavigate}
       className={clsx(className, active ? activeClassName : inactiveClassName)}
+      style={active ? { color: "var(--accent)" } : undefined}
       aria-current={active ? "page" : undefined}
     >
       {label}

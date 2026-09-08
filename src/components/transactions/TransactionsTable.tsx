@@ -41,7 +41,7 @@ export function TransactionsTable({ transactions, categories }: { transactions: 
                 {t.date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
               </td>
               <td className="px-4 py-3">
-                <p className="font-medium text-slate-800">{t.merchant || t.description || "—"}</p>
+                <p className="font-medium text-slate-800 dark:text-slate-100">{t.merchant || t.description || "—"}</p>
                 {t.merchant && t.description && <p className="text-xs text-slate-400">{t.description}</p>}
               </td>
               <td className="px-4 py-3">

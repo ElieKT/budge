@@ -1,0 +1,111 @@
+BUDGE - SETUP AND RUN INSTRUCTIONS (plain text)
+================================================
+Full details, architecture notes, and honest status of what has and hasn't
+been verified live in README.md. This file is a quick, plain-text version
+of the setup steps for anyone who wants them without opening a Markdown
+viewer.
+
+--------------------------------------------------------------------------
+1. REQUIREMENTS
+--------------------------------------------------------------------------
+- Node.js 20 or newer
+- A PostgreSQL database (version 14+). You do not need to install Postgres
+  yourself - a free hosted database from Neon (https://neon.tech) or
+  Supabase (https://supabase.com) takes about two minutes to set up and
+  needs no local install.
+- git
+
+--------------------------------------------------------------------------
+2. GET THE CODE
+--------------------------------------------------------------------------
+    git clone <this repository's URL>
+    cd budge
+    npm install
+
+--------------------------------------------------------------------------
+3. CONFIGURE ENVIRONMENT VARIABLES
+--------------------------------------------------------------------------
+    cp .env.example .env
+
+Then open .env in a text editor and fill in:
+
+    DATABASE_URL     - your Postgres connection string (from Neon/Supabase/etc)
+    AUTH_SECRET       - random secret; generate with: openssl rand -base64 32
+    NEXTAUTH_URL      - http://localhost:3000 for local development
+    CRON_SECRET       - random secret; generate with: openssl rand -base64 32
+    ENCRYPTION_KEY    - random secret; generate with: openssl rand -hex 32
+
+Everything else in .env.example is OPTIONAL:
+    RESEND_API_KEY / EMAIL_FROM        - only needed for real password-reset emails
+    PLAID_CLIENT_ID / PLAID_SECRET /
+    PLAID_ENV                          - only needed for real bank/card sync
+                                          (free Sandbox keys at
+                                          https://dashboard.plaid.com/signup)
+
+Do not commit your real .env file. It is already excluded via .gitignore.
+
+--------------------------------------------------------------------------
+4. SET UP THE DATABASE
+--------------------------------------------------------------------------
+    npx prisma migrate deploy
+    npx prisma db seed
+
+The first command creates all the tables. The second seeds the 19 default
+income/expense categories every account starts with (safe to re-run).
+
+Optional - add a demo account with sample data (LOCAL DEVELOPMENT ONLY,
+never run this against a real/production database):
+    SEED_DEMO_USER=true npx prisma db seed
+This creates demo@budge.local / Demo1234!
+
+--------------------------------------------------------------------------
+5. RUN IT
+--------------------------------------------------------------------------
+    npm run dev
+
+Then open http://localhost:3000 in your browser. Register a new account
+(or sign in with the demo account if you seeded one above).
+
+--------------------------------------------------------------------------
+6. RUN THE CHECKS (optional, confirms everything works)
+--------------------------------------------------------------------------
+    npm test           - runs the automated test suite
+    npx tsc --noEmit    - type-checks the whole project
+    npx eslint .         - lints the whole project
+    npm run build          - builds the app the way production would
+
+--------------------------------------------------------------------------
+7. DEPLOY IT PUBLICLY (optional)
+--------------------------------------------------------------------------
+The easiest path is Vercel (https://vercel.com):
+    1. Import this repository into a new Vercel project.
+    2. Add the same environment variables from step 3 as Vercel
+       "Environment Variables" (production).
+    3. Deploy.
+    4. In the Vercel dashboard, confirm "Cron Jobs" is enabled so the
+       included vercel.json schedule (daily recurring-transaction sync)
+       actually runs.
+
+Full deployment details are in README.md under "Deployment".
+
+--------------------------------------------------------------------------
+8. WHAT'S IN THE APP
+--------------------------------------------------------------------------
+Dashboard, Transactions, Budgets, Savings Goals (with one-click starter
+buckets), Accounts (manual net worth tracking, plus optional real bank/card
+sync via Plaid), Investments (read-only holdings tracking), Household
+(shared-expense ledger for roommates/family - no real money moves through
+it), Reports, Recurring Transactions, Categories, Tools (currency converter
+and world clock), and Settings (profile photo, accent color, dark mode,
+language - English/French/Spanish for navigation).
+
+NOT in the app, on purpose (see README.md "What this deliberately is not"):
+sending real money between users, and placing real stock/crypto trades.
+Both require financial licensing this project does not have and will not
+fake having.
+
+--------------------------------------------------------------------------
+QUESTIONS / ISSUES
+--------------------------------------------------------------------------
+See README.md for architecture notes, the full environment variable
+reference, and an honest list of what has and has not been tested.

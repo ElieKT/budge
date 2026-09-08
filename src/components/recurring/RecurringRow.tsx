@@ -35,7 +35,7 @@ export function RecurringRow({ rule }: { rule: Row }) {
   return (
     <tr>
       <td className="px-4 py-3">
-        <p className="font-medium text-slate-800">{rule.merchant || rule.description || rule.category?.name || "Recurring"}</p>
+        <p className="font-medium text-slate-800 dark:text-slate-100">{rule.merchant || rule.description || rule.category?.name || "Recurring"}</p>
         <p className="text-xs text-slate-400">{rule.category?.name ?? "Uncategorized"}</p>
       </td>
       <td className="px-4 py-3 text-slate-600">{FREQUENCY_LABELS[rule.frequency]}</td>

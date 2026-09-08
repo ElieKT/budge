@@ -12,7 +12,7 @@ export function StatCard({
   tone?: "income" | "expense" | "neutral";
   hint?: string;
 }) {
-  const toneClass = { income: "text-income", expense: "text-expense", neutral: "text-slate-900" }[tone];
+  const toneClass = { income: "text-income", expense: "text-expense", neutral: "text-slate-900 dark:text-slate-50" }[tone];
   return (
     <div className="card">
       <p className="text-sm font-medium text-slate-500">{label}</p>

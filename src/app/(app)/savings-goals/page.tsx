@@ -2,6 +2,7 @@ import { requireUserId } from "@/lib/auth-guard";
 import { getSavingsGoals } from "@/server/data/savingsGoals";
 import { PageHeader, EmptyState } from "@/components/ui/Misc";
 import { AddSavingsGoalButton } from "@/components/savings/AddSavingsGoalButton";
+import { StarterGoalsButton } from "@/components/savings/StarterGoalsButton";
 import { SavingsGoalCard } from "@/components/savings/SavingsGoalCard";
 
 export default async function SavingsGoalsPage() {
@@ -10,7 +11,16 @@ export default async function SavingsGoalsPage() {
 
   return (
     <div>
-      <PageHeader title="Savings Goals" description="Set targets and track your progress" action={<AddSavingsGoalButton />} />
+      <PageHeader
+        title="Savings Goals"
+        description="Set targets and track your progress"
+        action={
+          <div className="flex gap-2">
+            <StarterGoalsButton />
+            <AddSavingsGoalButton />
+          </div>
+        }
+      />
       {goals.length === 0 ? (
         <EmptyState title="No savings goals yet" description="Create your first goal — an emergency fund, a trip, anything you're saving toward." />
       ) : (

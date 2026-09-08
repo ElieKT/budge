@@ -5,7 +5,28 @@ import { prisma } from "@/lib/prisma";
 import { requireUserId } from "@/lib/auth-guard";
 import { parseAmountToCents } from "@/lib/money";
 import { savingsGoalInputSchema, updateSavingsProgressSchema } from "@/lib/validation/savingsGoal";
+import { SAVINGS_GOAL_TEMPLATES } from "@/lib/savingsTemplates";
 import { errorResult, okResult, zodErrorResult, type ActionResult } from "@/server/action-result";
+
+/** Bulk-creates the selected starter buckets (Travel, Medical Emergency, etc.) in one go. */
+export async function createStarterSavingsGoals(names: string[]): Promise<ActionResult> {
+  const userId = await requireUserId();
+  const templates = SAVINGS_GOAL_TEMPLATES.filter((t) => names.includes(t.name));
+  if (templates.length === 0) return errorResult("Select at least one goal to add.");
+
+  await prisma.savingsGoal.createMany({
+    data: templates.map((t) => ({
+      userId,
+      name: t.name,
+      targetAmount: t.targetAmountCents,
+      currentAmount: 0,
+    })),
+  });
+
+  revalidatePath("/savings-goals");
+  revalidatePath("/dashboard");
+  return okResult(undefined);
+}
 
 export async function createSavingsGoal(
   _prev: unknown,
